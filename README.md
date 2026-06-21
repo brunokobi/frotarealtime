@@ -1,5 +1,7 @@
 # 🛸 Frota Realtime RJ - Monitoramento de Alta Performance
 
+![Demonstração do Mapa](./assets/preview.png)
+
 ![Status](https://img.shields.io/badge/Status-Em%20Produção-success?style=for-the-badge)
 ![Performance](https://img.shields.io/badge/GPU_Render-Optimized-blueviolet?style=for-the-badge)
 ![MapLibre](https://img.shields.io/badge/MapLibre_GL-WebGL-0081C6?style=for-the-badge&logo=maplibre&logoColor=white)
@@ -15,7 +17,7 @@ Plataforma de monitoramento GPS em tempo real da frota de ônibus da cidade do R
 Para garantir que o mapa rode a 60 FPS mesmo com milhares de SVGs e textos dinâmicos, o projeto conta com uma arquitetura *Zero-Bottleneck*:
 
 ### 🖥️ Otimizações de GPU / WebGL (MapLibre)
-* **Bypass de Colisão Assíncrona (`text-ignore-placement`):** Desativa o recálculo do Worker para sobreposição de textos, forçando a GPU a desenhar as *labels* instantaneamente, prevenindo estouro de memória (VertexArray Mismatch).
+* **Bypass de Colisão Asíncrona (`text-ignore-placement`):** Desativa o recálculo do Worker para sobreposição de textos, forçando a GPU a desenhar as *labels* instantaneamente, prevenindo estouro de memória (VertexArray Mismatch).
 * **Culling de Câmera e Antialiasing (`minzoom`, `antialias: false`):** Suavização de pixels desativada para poupar ciclos da placa de vídeo. Textos só são injetados no pipeline de renderização se o usuário estiver em um nível de zoom legível.
 * **Network Trapping (`maxBounds`):** Câmera travada nas coordenadas do RJ, impedindo que o navegador faça o download de *tiles* de satélite inúteis caso o usuário arraste o mapa para longe.
 
@@ -51,5 +53,5 @@ Como a aplicação exige um backend Serverless para contornar o CORS da API púb
 
 1. Clone o repositório:
 ```bash
-git clone [https://github.com/brunokobi/frota-realtime.git](https://github.com/brunokobi/frota-realtime.git)
-cd frota-realtime
+git clone [https://github.com/brunokobi/frotarealtime.git](https://github.com/brunokobi/frotarealtime.git)
+cd frotarealtime
