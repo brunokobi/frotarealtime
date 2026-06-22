@@ -1,4 +1,21 @@
-# 🛸 Frota Realtime RJ - Monitoramento de Alta Performance
+```
+██████╗ ██╗   ██╗██████╗ ███╗   ██╗ ██████╗     ██╗  ██╗ ██████╗ ██████╗ ██╗
+██╔══██╗██║   ██║██╔══██╗████╗  ██║██╔═══██╗    ██║ ██╔╝██╔═══██╗██╔══██╗██║
+██████╔╝██║   ██║██████╔╝██╔██╗ ██║██║   ██║    █████╔╝ ██║   ██║██████╔╝██║
+██╔══██╗██║   ██║██╔══██╗██║╚██╗██║██║   ██║    ██╔═██╗ ██║   ██║██╔══██╗██║
+██████╔╝╚██████╔╝██║  ██║██║ ╚████║╚██████╔╝    ██║  ██╗╚██████╔╝██████╔╝██║
+╚═════╝  ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═══╝ ╚═════╝     ╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ╚═╝
+
+  ██████╗ ███████╗ █████╗ ██╗  ████████╗██╗███╗   ███╗███████╗
+  ██╔══██╗██╔════╝██╔══██╗██║  ╚══██╔══╝██║████╗ ████║██╔════╝
+  ██████╔╝█████╗  ███████║██║     ██║   ██║██╔████╔██║█████╗
+  ██╔══██╗██╔══╝  ██╔══██║██║     ██║   ██║██║╚██╔╝██║██╔══╝
+  ██║  ██║███████╗██║  ██║███████╗██║   ██║██║ ╚═╝ ██║███████╗
+  ╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝╚══════╝╚═╝   ╚═╝╚═╝     ╚═╝╚══════╝
+
+  >> MONITORAMENTO GPS DE ALTA PERFORMANCE — RIO DE JANEIRO <<
+  >> BUILD: NETLIFY EDGE  |  ENGINE: WEBGL  |  STATUS: [ONLINE] <<
+```
 
 ![Demonstração do Mapa](./assets/preview.png)
 
@@ -27,7 +44,8 @@ Para garantir que o mapa rode a 60 FPS mesmo com milhares de SVGs e textos dinâ
 
 ### 🌐 Arquitetura Serverless & Resiliência (Proxy API)
 * **Edge Proxying:** Consumo da API pública da Mobilidade Rio encapsulado em uma Netlify Function (Node.js) para contornar problemas de CORS.
-* **Fail-Fast Architecture:** Implementação de um `timeout` estrito de 8 segundos no socket HTTPS. Se a API de origem engargalar, o proxy corta a conexão imediatamente (retornando `504 Gateway Timeout`), protegendo a *thread* principal e evitando o bloqueio da interface do usuário.
+* **Streaming Parcial com Deadline de 7s:** A função corta o stream após 7s, repara o JSON parcial no último objeto completo e retorna os ônibus já recebidos — evita 504 com mapa vazio quando a API de origem é lenta.
+* **Cache localStorage:** Último GeoJSON válido salvo no browser. Se a API falhar, o mapa exibe os dados em cache com indicador de idade (`🟡 cache de Xmin atrás`).
 * **Decompressão Zlib:** Tratamento nativo de *streams* em `gzip/deflate` na borda para minimizar o *payload* trafegado.
 
 ---
@@ -53,5 +71,18 @@ Como a aplicação exige um backend Serverless para contornar o CORS da API púb
 
 1. Clone o repositório:
 ```bash
-git clone [https://github.com/brunokobi/frotarealtime.git](https://github.com/brunokobi/frotarealtime.git)
+git clone https://github.com/brunokobi/frotarealtime.git
 cd frotarealtime
+```
+
+2. Instale as dependências:
+```bash
+npm install
+```
+
+3. Inicie o servidor local com emulação de Functions:
+```bash
+netlify dev
+```
+
+4. Acesse `http://localhost:8888`
