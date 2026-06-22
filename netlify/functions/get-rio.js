@@ -27,6 +27,24 @@ exports.handler = async function(event, context) {
       });
 
       stream.on('end', () => {
+        const CORS = {
+          "Access-Control-Allow-Origin": "*",
+          "Content-Type": "application/json"
+        };
+
+        if (!rawData.trimStart().startsWith('[')) {
+          console.error('[get-rio] Resposta inesperada da API:', rawData.slice(0, 300));
+          return resolve({
+            statusCode: 502,
+            headers: CORS,
+            body: JSON.stringify({
+              erro: "Bad Gateway",
+              detalhes: "API não retornou JSON array.",
+              preview: rawData.slice(0, 200)
+            })
+          });
+        }
+
         try {
           const data = JSON.parse(rawData);
 
@@ -55,16 +73,19 @@ exports.handler = async function(event, context) {
 
           resolve({
             statusCode: 200,
-            headers: {
-              "Access-Control-Allow-Origin": "*",
-              "Content-Type": "application/json"
-            },
+            headers: CORS,
             body: JSON.stringify(geojson),
           });
         } catch (e) {
-          resolve({ 
-            statusCode: 502, 
-            body: JSON.stringify({ erro: "Bad Gateway", detalhes: "Erro no Parse JSON da API." }) 
+          console.error('[get-rio] Erro no parse JSON:', e.message, '| preview:', rawData.slice(0, 300));
+          resolve({
+            statusCode: 502,
+            headers: CORS,
+            body: JSON.stringify({
+              erro: "Bad Gateway",
+              detalhes: "Erro no parse JSON: " + e.message,
+              preview: rawData.slice(0, 200)
+            })
           });
         }
       });

@@ -300,24 +300,67 @@
             setInterval(fetchPositions, 30000); 
         }
 
+        const CACHE_KEY = 'frota_geojson_cache';
+        const CACHE_TS_KEY = 'frota_geojson_cache_ts';
+
+        function salvarCache(geojson) {
+            try {
+                localStorage.setItem(CACHE_KEY, JSON.stringify(geojson));
+                localStorage.setItem(CACHE_TS_KEY, Date.now().toString());
+            } catch (_) {}
+        }
+
+        function carregarCache() {
+            try {
+                const raw = localStorage.getItem(CACHE_KEY);
+                const ts = localStorage.getItem(CACHE_TS_KEY);
+                if (!raw) return null;
+                return { geojson: JSON.parse(raw), ts: ts ? parseInt(ts) : null };
+            } catch (_) { return null; }
+        }
+
+        function formatarIdade(ts) {
+            if (!ts) return 'cache antigo';
+            const min = Math.round((Date.now() - ts) / 60000);
+            if (min < 60) return `cache de ${min} min atrás`;
+            const h = Math.floor(min / 60);
+            return `cache de ${h}h atrás`;
+        }
+
         async function fetchPositions() {
             try {
                 const t0 = performance.now();
                 document.getElementById('panel').innerHTML = `⏳ <b>BAIXANDO DADOS...</b><br><hr><span style="color:#aaa; font-size:11px;">Aguardando API (max 8s)</span>`;
 
                 const res = await fetch('/.netlify/functions/get-rio');
-                if (!res.ok) throw new Error("Erro no Serverless");
-                
+                if (!res.ok) {
+                    let motivo = `HTTP ${res.status}`;
+                    try {
+                        const corpo = await res.json();
+                        motivo = corpo.detalhes || corpo.erro || motivo;
+                        if (corpo.preview) console.warn('[get-rio] preview:', corpo.preview);
+                    } catch (_) {}
+                    throw new Error(motivo);
+                }
+
                 const geojson = await res.json();
-                
+
                 t1Global = performance.now();
                 fetchTimeGlobal = ((t1Global - t0) / 1000).toFixed(2);
 
+                salvarCache(geojson);
                 map.getSource('frota-onibus').setData(geojson);
-                
+
             } catch (err) {
                 console.error("Erro no ciclo de atualização:", err);
-                document.getElementById('panel').innerHTML = `🔴 <b>ERRO DE CONEXÃO</b><br><hr><span style="color:#ff4444; font-size:11px;">Aguardando próximo ciclo...</span>`;
+
+                const cached = carregarCache();
+                if (cached) {
+                    map.getSource('frota-onibus').setData(cached.geojson);
+                    document.getElementById('panel').innerHTML = `🟡 <b>API INDISPONÍVEL</b><br><hr><span style="color:#ffcc00; font-size:11px;">${err.message}<br>Exibindo ${formatarIdade(cached.ts)}</span>`;
+                } else {
+                    document.getElementById('panel').innerHTML = `🔴 <b>ERRO DE CONEXÃO</b><br><hr><span style="color:#ff4444; font-size:11px;">${err.message}<br>Sem cache disponível</span>`;
+                }
             }
         }
     </script>
