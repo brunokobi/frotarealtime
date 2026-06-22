@@ -1,16 +1,106 @@
 const https = require('https');
 const zlib = require('zlib');
 
+const MAX_BYTES = 4 * 1024 * 1024; // 4MB
+const DEADLINE_MS = 7000;          // corta em 7s e usa o que chegou
+
 exports.handler = async function(event, context) {
   return new Promise((resolve) => {
+    const CORS = {
+      "Access-Control-Allow-Origin": "*",
+      "Content-Type": "application/json"
+    };
+
     const options = {
       hostname: 'dados.mobilidade.rio',
       path: '/gps/sppo',
       method: 'GET',
       headers: { 'Accept-Encoding': 'gzip, deflate' },
       rejectUnauthorized: false,
-      timeout: 8000 // Timeout restrito para evitar erro 500 de limite da AWS/Netlify
     };
+
+    let rawData = '';
+    let resolvido = false;
+
+    function encerrar(motivo) {
+      if (resolvido) return;
+      resolvido = true;
+      req.destroy();
+      processarDados(motivo);
+    }
+
+    // Deadline: após 7s, corta e usa o que chegou
+    const deadline = setTimeout(() => encerrar('parcial'), DEADLINE_MS);
+
+    function processarDados(motivo) {
+      clearTimeout(deadline);
+
+      if (!rawData.trimStart().startsWith('[')) {
+        console.error('[get-rio] Resposta inesperada:', rawData.slice(0, 300));
+        return resolve({
+          statusCode: 502,
+          headers: CORS,
+          body: JSON.stringify({
+            erro: "Bad Gateway",
+            detalhes: "API não retornou JSON array.",
+            preview: rawData.slice(0, 200)
+          })
+        });
+      }
+
+      // Tenta fechar o JSON parcial: encontra o último objeto completo
+      let jsonParaParsear = rawData;
+      if (motivo === 'parcial') {
+        const ultimoFechamento = rawData.lastIndexOf('}');
+        if (ultimoFechamento === -1) {
+          return resolve({
+            statusCode: 504,
+            headers: CORS,
+            body: JSON.stringify({ erro: "Timeout", detalhes: "API lenta, nenhum objeto completo recebido em 7s." })
+          });
+        }
+        jsonParaParsear = rawData.slice(0, ultimoFechamento + 1) + ']';
+        console.log(`[get-rio] Parcial: ${rawData.length} bytes recebidos, JSON reparado.`);
+      }
+
+      try {
+        const data = JSON.parse(jsonParaParsear);
+
+        const geojson = {
+          type: 'FeatureCollection',
+          features: data.map(onibus => {
+            const latParsed = parseFloat(onibus.latitude.replace(',', '.'));
+            const lngParsed = parseFloat(onibus.longitude.replace(',', '.'));
+            if (isNaN(lngParsed) || isNaN(latParsed) || lngParsed === 0 || latParsed === 0) return null;
+            return {
+              type: 'Feature',
+              geometry: { type: 'Point', coordinates: [lngParsed, latParsed] },
+              properties: {
+                id: onibus.ordem,
+                linha: onibus.linha,
+                velocidade: onibus.velocidade,
+                parcial: motivo === 'parcial'
+              }
+            };
+          }).filter(Boolean)
+        };
+
+        console.log(`[get-rio] OK (${motivo}): ${geojson.features.length} ônibus`);
+        resolve({ statusCode: 200, headers: CORS, body: JSON.stringify(geojson) });
+
+      } catch (e) {
+        console.error('[get-rio] Parse falhou:', e.message, '| preview:', rawData.slice(0, 300));
+        resolve({
+          statusCode: 502,
+          headers: CORS,
+          body: JSON.stringify({
+            erro: "Bad Gateway",
+            detalhes: "Erro no parse JSON: " + e.message,
+            preview: rawData.slice(0, 200)
+          })
+        });
+      }
+    }
 
     const req = https.get(options, (res) => {
       let stream = res;
@@ -20,112 +110,25 @@ exports.handler = async function(event, context) {
         stream = res.pipe(zlib.createInflate());
       }
 
-      let rawData = '';
-      const MAX_BYTES = 4 * 1024 * 1024; // 4MB — limite seguro abaixo do teto de 6MB da Netlify
-      let abortado = false;
-
       stream.on('data', (chunk) => {
+        if (resolvido) return;
         rawData += chunk;
-        if (rawData.length > MAX_BYTES && !abortado) {
-          abortado = true;
-          req.destroy();
-          console.error('[get-rio] Resposta muito grande, abortando:', rawData.length, 'bytes');
-        }
+        if (rawData.length > MAX_BYTES) encerrar('parcial');
       });
 
-      stream.on('end', () => {
-        const CORS = {
-          "Access-Control-Allow-Origin": "*",
-          "Content-Type": "application/json"
-        };
-
-        if (abortado) {
-          return resolve({
-            statusCode: 502,
-            headers: CORS,
-            body: JSON.stringify({
-              erro: "Bad Gateway",
-              detalhes: `Resposta da API muito grande (>${MAX_BYTES / 1024 / 1024}MB), abortado.`
-            })
-          });
-        }
-
-        if (!rawData.trimStart().startsWith('[')) {
-          console.error('[get-rio] Resposta inesperada da API:', rawData.slice(0, 300));
-          return resolve({
-            statusCode: 502,
-            headers: CORS,
-            body: JSON.stringify({
-              erro: "Bad Gateway",
-              detalhes: "API não retornou JSON array.",
-              preview: rawData.slice(0, 200)
-            })
-          });
-        }
-
-        try {
-          const data = JSON.parse(rawData);
-
-          const geojson = {
-            type: 'FeatureCollection',
-            features: data.map(onibus => {
-              const latParsed = parseFloat(onibus.latitude.replace(',', '.'));
-              const lngParsed = parseFloat(onibus.longitude.replace(',', '.'));
-
-              if (isNaN(lngParsed) || isNaN(latParsed) || lngParsed === 0 || latParsed === 0) return null;
-
-              return {
-                type: 'Feature',
-                geometry: {
-                  type: 'Point',
-                  coordinates: [lngParsed, latParsed]
-                },
-                properties: {
-                  id: onibus.ordem,
-                  linha: onibus.linha,
-                  velocidade: onibus.velocidade
-                }
-              };
-            }).filter(Boolean)
-          };
-
-          resolve({
-            statusCode: 200,
-            headers: CORS,
-            body: JSON.stringify(geojson),
-          });
-        } catch (e) {
-          console.error('[get-rio] Erro no parse JSON:', e.message, '| preview:', rawData.slice(0, 300));
-          resolve({
-            statusCode: 502,
-            headers: CORS,
-            body: JSON.stringify({
-              erro: "Bad Gateway",
-              detalhes: "Erro no parse JSON: " + e.message,
-              preview: rawData.slice(0, 200)
-            })
-          });
-        }
-      });
-    });
-
-    req.on('timeout', () => {
-      req.destroy();
-      resolve({ 
-        statusCode: 504, 
-        headers: {
-          "Access-Control-Allow-Origin": "*",
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ erro: "Gateway Timeout", detalhes: "A API do Rio demorou mais de 8s." }) 
-      });
+      stream.on('end', () => encerrar('completo'));
     });
 
     req.on('error', (e) => {
-      resolve({ 
-        statusCode: 500, 
-        headers: { "Access-Control-Allow-Origin": "*" },
-        body: JSON.stringify({ erro: "Erro HTTPS", detalhes: e.message }) 
+      if (resolvido) return;
+      clearTimeout(deadline);
+      resolvido = true;
+      // Se foi destroy() por deadline, já processamos — ignora o erro ECONNRESET
+      if (e.code === 'ECONNRESET' || e.code === 'ERR_STREAM_DESTROYED') return;
+      resolve({
+        statusCode: 500,
+        headers: CORS,
+        body: JSON.stringify({ erro: "Erro HTTPS", detalhes: e.message })
       });
     });
 
