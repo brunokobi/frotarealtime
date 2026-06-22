@@ -21,9 +21,16 @@ exports.handler = async function(event, context) {
       }
 
       let rawData = '';
+      const MAX_BYTES = 4 * 1024 * 1024; // 4MB — limite seguro abaixo do teto de 6MB da Netlify
+      let abortado = false;
 
-      stream.on('data', (chunk) => { 
-        rawData += chunk; 
+      stream.on('data', (chunk) => {
+        rawData += chunk;
+        if (rawData.length > MAX_BYTES && !abortado) {
+          abortado = true;
+          req.destroy();
+          console.error('[get-rio] Resposta muito grande, abortando:', rawData.length, 'bytes');
+        }
       });
 
       stream.on('end', () => {
@@ -31,6 +38,17 @@ exports.handler = async function(event, context) {
           "Access-Control-Allow-Origin": "*",
           "Content-Type": "application/json"
         };
+
+        if (abortado) {
+          return resolve({
+            statusCode: 502,
+            headers: CORS,
+            body: JSON.stringify({
+              erro: "Bad Gateway",
+              detalhes: `Resposta da API muito grande (>${MAX_BYTES / 1024 / 1024}MB), abortado.`
+            })
+          });
+        }
 
         if (!rawData.trimStart().startsWith('[')) {
           console.error('[get-rio] Resposta inesperada da API:', rawData.slice(0, 300));
