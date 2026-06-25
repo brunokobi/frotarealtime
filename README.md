@@ -16,7 +16,21 @@
 ![Node.js](https://img.shields.io/badge/Node.js-Serverless-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)
 ![Netlify](https://img.shields.io/badge/Netlify-Edge-00C7B7?style=for-the-badge&logo=netlify&logoColor=white)
 
-Plataforma de monitoramento GPS em tempo real da frota de ônibus da cidade do Rio de Janeiro. Desenvolvida com foco em **extrema performance de renderização (WebGL)** e resiliência de rede, a aplicação é capaz de processar e desenhar mais de 4.000 pontos em movimento simultaneamente sobre camadas pesadas de satélite, sem gargalos de CPU ou GPU.
+Plataforma de monitoramento GPS em tempo real da frota de ônibus da cidade do Rio de Janeiro. Desenvolvida com foco em **extrema performance de renderização (WebGL)** e resiliência de rede, a aplicação processa e desenha mais de 4.000 pontos em movimento simultaneamente sobre camadas de satélite, com animação suave entre atualizações e múltiplas camadas de análise.
+
+---
+
+## 🗺️ Funcionalidades
+
+* **Posicionamento em tempo real** — dados GPS atualizados a cada 30 segundos via API pública da Mobilidade Rio.
+* **Animação de movimento** — ao chegar novos dados, cada ônibus desliza suavemente da posição anterior para a nova (interpolação com easing, 4s).
+* **Cor por velocidade** — ícone muda de cor em tempo real: 🟢 em movimento (>20 km/h) · 🟡 lento (1–20 km/h) · 🔴 parado (0 km/h).
+* **Filtro por linha** — campo de busca que exibe apenas os ônibus da linha digitada, com contagem ao vivo.
+* **Trail do ônibus** — ao clicar em um ônibus, exibe as últimas 10 posições registradas como trilha pontilhada no mapa.
+* **Cluster em zoom baixo** — ao afastar o mapa (zoom ≤ 10), ônibus próximos se agrupam em bolhas com contagem; clicar dá zoom automático no grupo.
+* **Heatmap de densidade** — camada de calor ativável por botão, mostrando concentração da frota em toda a cidade.
+* **Painel de estatísticas** — exibe frota ativa, % de ônibus parados, velocidade média e linha com mais ônibus em operação.
+* **Cache offline** — último estado válido salvo no `localStorage`; se a API falhar, o mapa exibe os dados em cache com indicador de idade.
 
 ---
 
@@ -24,20 +38,21 @@ Plataforma de monitoramento GPS em tempo real da frota de ônibus da cidade do R
 
 Para garantir que o mapa rode a 60 FPS mesmo com milhares de SVGs e textos dinâmicos, o projeto conta com uma arquitetura *Zero-Bottleneck*:
 
-### 🖥️ Otimizações de GPU / WebGL (MapLibre)
-* **Bypass de Colisão Asíncrona (`text-ignore-placement`):** Desativa o recálculo do Worker para sobreposição de textos, forçando a GPU a desenhar as *labels* instantaneamente, prevenindo estouro de memória (VertexArray Mismatch).
-* **Culling de Câmera e Antialiasing (`minzoom`, `antialias: false`):** Suavização de pixels desativada para poupar ciclos da placa de vídeo. Textos só são injetados no pipeline de renderização se o usuário estiver em um nível de zoom legível.
-* **Network Trapping (`maxBounds`):** Câmera travada nas coordenadas do RJ, impedindo que o navegador faça o download de *tiles* de satélite inúteis caso o usuário arraste o mapa para longe.
+### 🖥️ GPU / WebGL (MapLibre)
+* **Bypass de Colisão Assíncrona (`text-ignore-placement`):** Desativa o recálculo do Worker para sobreposição de textos, forçando a GPU a desenhar as *labels* instantaneamente.
+* **Culling de Câmera (`minzoom`, `antialias: false`):** Suavização de pixels desativada para poupar ciclos de GPU. Textos só entram no pipeline se o zoom for legível.
+* **Network Trapping (`maxBounds`):** Câmera travada no RJ, impedindo download de *tiles* inúteis.
+* **Expressão nativa de cor (`icon-image: case`):** A seleção de ícone por velocidade roda inteiramente na GPU via expressão MapLibre — zero JavaScript por frame.
 
-### 🧠 Otimizações de CPU (Source Data)
-* **Algoritmo de Simplificação Desativado (`tolerance: 0`):** Remove o overhead do algoritmo de Douglas-Peucker (útil apenas para polígonos/linhas), poupando a CPU ao injetar dados estritamente pontuais.
-* **Buffer Zero (`buffer: 0`):** Impede a engine de pré-calcular colisões de geometria fora do limite visível da tela (*viewport*).
+### 🧠 CPU (Source Data)
+* **Formato compacto no payload:** A Netlify Function entrega arrays `[id, linha, vel, lng, lat]` em vez de GeoJSON completo — redução de ~70% no tamanho do payload (~600 KB vs ~3 MB).
+* **Algoritmo de Simplificação Desativado (`tolerance: 0`):** Remove o overhead do Douglas-Peucker, útil apenas para polígonos.
+* **Cluster nativo MapLibre:** Agrupamento de pontos feito na engine em C++ (WASM), sem custo no thread principal.
 
-### 🌐 Arquitetura Serverless & Resiliência (Proxy API)
-* **Edge Proxying:** Consumo da API pública da Mobilidade Rio encapsulado em uma Netlify Function (Node.js) para contornar problemas de CORS.
-* **Streaming Parcial com Deadline de 7s:** A função corta o stream após 7s, repara o JSON parcial no último objeto completo e retorna os ônibus já recebidos — evita 504 com mapa vazio quando a API de origem é lenta.
-* **Cache localStorage:** Último GeoJSON válido salvo no browser. Se a API falhar, o mapa exibe os dados em cache com indicador de idade (`🟡 cache de Xmin atrás`).
-* **Decompressão Zlib:** Tratamento nativo de *streams* em `gzip/deflate` na borda para minimizar o *payload* trafegado.
+### 🌐 Serverless & Resiliência (Proxy API)
+* **Edge Proxying:** API pública da Mobilidade Rio encapsulada em Netlify Function para contornar CORS.
+* **Streaming Parcial com Deadline de 7s:** A função corta o stream, repara o JSON parcial no último objeto completo e retorna os ônibus já recebidos — evita 504 com mapa vazio.
+* **Decompressão Zlib:** Tratamento nativo de streams `gzip/deflate` na borda.
 
 ---
 

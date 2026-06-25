@@ -70,27 +70,18 @@ exports.handler = async function(event, context) {
       try {
         const data = JSON.parse(jsonParaParsear);
 
-        const geojson = {
-          type: 'FeatureCollection',
-          features: data.map(onibus => {
-            const latParsed = parseFloat(onibus.latitude.replace(',', '.'));
-            const lngParsed = parseFloat(onibus.longitude.replace(',', '.'));
-            if (isNaN(lngParsed) || isNaN(latParsed) || lngParsed === 0 || latParsed === 0) return null;
-            return {
-              type: 'Feature',
-              geometry: { type: 'Point', coordinates: [lngParsed, latParsed] },
-              properties: {
-                id: onibus.ordem,
-                linha: onibus.linha,
-                velocidade: onibus.velocidade,
-                parcial: motivo === 'parcial'
-              }
-            };
+        const result = {
+          parcial: motivo === 'parcial',
+          buses: data.map(onibus => {
+            const lat = parseFloat(onibus.latitude.replace(',', '.'));
+            const lng = parseFloat(onibus.longitude.replace(',', '.'));
+            if (isNaN(lng) || isNaN(lat) || lng === 0 || lat === 0) return null;
+            return [onibus.ordem, onibus.linha, parseFloat(onibus.velocidade) || 0, lng, lat];
           }).filter(Boolean)
         };
 
-        console.log(`[get-rio] OK (${motivo}): ${geojson.features.length} ônibus`);
-        resolve({ statusCode: 200, headers: CORS, body: JSON.stringify(geojson) });
+        console.log(`[get-rio] OK (${motivo}): ${result.buses.length} ônibus`);
+        resolve({ statusCode: 200, headers: CORS, body: JSON.stringify(result) });
 
       } catch (e) {
         console.error('[get-rio] Parse falhou:', e.message, '| preview:', rawData.slice(0, 300));
