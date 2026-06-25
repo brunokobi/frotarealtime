@@ -19,6 +19,8 @@ exports.handler = async function(event, context) {
       rejectUnauthorized: false,
     };
 
+    let chunks = [];
+    let totalBytes = 0;
     let rawData = '';
     let resolvido = false;
 
@@ -34,6 +36,8 @@ exports.handler = async function(event, context) {
 
     function processarDados(motivo) {
       clearTimeout(deadline);
+
+      if (!rawData) rawData = Buffer.concat(chunks).toString('utf8');
 
       if (!rawData.trimStart().startsWith('[')) {
         console.error('[get-rio] Resposta inesperada:', rawData.slice(0, 300));
@@ -112,11 +116,15 @@ exports.handler = async function(event, context) {
 
       stream.on('data', (chunk) => {
         if (resolvido) return;
-        rawData += chunk;
-        if (rawData.length > MAX_BYTES) encerrar('parcial');
+        chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+        totalBytes += chunk.length;
+        if (totalBytes > MAX_BYTES) encerrar('parcial');
       });
 
-      stream.on('end', () => encerrar('completo'));
+      stream.on('end', () => {
+        rawData = Buffer.concat(chunks).toString('utf8');
+        encerrar('completo');
+      });
     });
 
     req.on('error', (e) => {

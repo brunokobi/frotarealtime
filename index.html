@@ -145,6 +145,12 @@
             color: var(--accent-yellow) !important;
             background-color: transparent !important;
         }
+
+        /* ---------------- ESTADOS DO PAINEL ---------------- */
+        .panel-info  { color: #aaa; font-size: 11px; }
+        .panel-ok    { color: #00ffcc; }
+        .panel-warn  { color: #ffcc00; font-size: 11px; }
+        .panel-error { color: #ff4444; font-size: 11px; }
     </style>
 </head>
 <body>
@@ -184,6 +190,10 @@
     <script>
         let fetchTimeGlobal = "0.00";
         let t1Global = 0;
+        let busCount = 0;
+        let isFetching = false;
+        let intervalId = null;
+        let abortController = null;
 
         const map = new maplibregl.Map({
             container: 'map',
@@ -249,21 +259,8 @@
                 }
             });
 
-            map.on('data', (e) => {
-                if (e.sourceId === 'frota-onibus' && e.isSourceLoaded) {
-                    const renderTimeSec = ((performance.now() - t1Global) / 1000).toFixed(2);
-                    const featuresCount = map.querySourceFeatures('frota-onibus').length;
-                    
-                    if (featuresCount > 0) {
-                        document.getElementById('panel').innerHTML = `
-                            🟢 <b>SISTEMA ONLINE</b><br>
-                            <hr>
-                            Frota Ativa: <span class="metric">${featuresCount}</span><br>
-                            Fetch & Parse: <span class="metric">${fetchTimeGlobal} s</span><br>
-                            Render GPU: <span class="metric">${renderTimeSec} s</span>
-                        `;
-                    }
-                }
+            map.once('data', function onFirstData(e) {
+                if (e.sourceId !== 'frota-onibus') { map.once('data', onFirstData); return; }
             });
 
             map.on('click', 'layer-onibus', (e) => {
@@ -297,7 +294,17 @@
             map.on('mouseleave', 'layer-onibus', () => map.getCanvas().style.cursor = '');
 
             fetchPositions();
-            setInterval(fetchPositions, 30000); 
+            intervalId = setInterval(fetchPositions, 30000);
+
+            document.addEventListener('visibilitychange', () => {
+                if (document.hidden) {
+                    clearInterval(intervalId);
+                    intervalId = null;
+                } else {
+                    fetchPositions();
+                    intervalId = setInterval(fetchPositions, 30000);
+                }
+            });
         }
 
         const CACHE_KEY = 'frota_geojson_cache';
@@ -327,12 +334,27 @@
             return `cache de ${h}h atrás`;
         }
 
-        async function fetchPositions() {
-            try {
-                const t0 = performance.now();
-                document.getElementById('panel').innerHTML = `⏳ <b>BAIXANDO DADOS...</b><br><hr><span style="color:#aaa; font-size:11px;">Aguardando API (max 8s)</span>`;
+        function atualizarPainel(tipo, linhas) {
+            const icones = { online: '🟢', loading: '⏳', warn: '🟡', error: '🔴' };
+            const titulos = { online: 'SISTEMA ONLINE', loading: 'BAIXANDO DADOS...', warn: 'API INDISPONÍVEL', error: 'ERRO DE CONEXÃO' };
+            const classes = { online: 'panel-ok', loading: 'panel-info', warn: 'panel-warn', error: 'panel-error' };
+            document.getElementById('panel').innerHTML =
+                `${icones[tipo]} <b>${titulos[tipo]}</b><br><hr><span class="${classes[tipo]}">${linhas}</span>`;
+        }
 
-                const res = await fetch('/.netlify/functions/get-rio');
+        async function fetchPositions() {
+            if (isFetching) return;
+            isFetching = true;
+
+            if (abortController) abortController.abort();
+            abortController = new AbortController();
+
+            atualizarPainel('loading', 'Aguardando API (max 7s)');
+            const t0 = performance.now();
+
+            try {
+                const res = await fetch('/.netlify/functions/get-rio', { signal: abortController.signal });
+
                 if (!res.ok) {
                     let motivo = `HTTP ${res.status}`;
                     try {
@@ -347,20 +369,31 @@
 
                 t1Global = performance.now();
                 fetchTimeGlobal = ((t1Global - t0) / 1000).toFixed(2);
+                busCount = geojson.features.length;
 
                 salvarCache(geojson);
                 map.getSource('frota-onibus').setData(geojson);
 
+                const renderMs = ((performance.now() - t1Global) / 1000).toFixed(2);
+                atualizarPainel('online',
+                    `Frota Ativa: <span class="metric">${busCount}</span><br>` +
+                    `Fetch & Parse: <span class="metric">${fetchTimeGlobal} s</span><br>` +
+                    `Render GPU: <span class="metric">${renderMs} s</span>`
+                );
+
             } catch (err) {
-                console.error("Erro no ciclo de atualização:", err);
+                if (err.name === 'AbortError') { isFetching = false; return; }
+                console.error('Erro no ciclo de atualização:', err);
 
                 const cached = carregarCache();
                 if (cached) {
                     map.getSource('frota-onibus').setData(cached.geojson);
-                    document.getElementById('panel').innerHTML = `🟡 <b>API INDISPONÍVEL</b><br><hr><span style="color:#ffcc00; font-size:11px;">${err.message}<br>Exibindo ${formatarIdade(cached.ts)}</span>`;
+                    atualizarPainel('warn', `${err.message}<br>Exibindo ${formatarIdade(cached.ts)}`);
                 } else {
-                    document.getElementById('panel').innerHTML = `🔴 <b>ERRO DE CONEXÃO</b><br><hr><span style="color:#ff4444; font-size:11px;">${err.message}<br>Sem cache disponível</span>`;
+                    atualizarPainel('error', `${err.message}<br>Sem cache disponível`);
                 }
+            } finally {
+                isFetching = false;
             }
         }
     </script>
