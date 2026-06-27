@@ -1,4 +1,12 @@
-# 🛸 Frota Realtime RJ - Monitoramento de Alta Performance
+```
+ ___ ___  ___ _____ _   ___ _   _ ___   ___ ___   _   _  _____ ___ __  __ ___ 
+| __| _ \/ _ \_   _/_\ | _ ) | | / __| | _ \ __| /_\ | ||_   _|_ _|  \/  | __|
+| _||   / (_) || |/ _ \| _ \ |_| \__ \ |   / _| / _ \| |__| |  | || |\/| | _| 
+|_| |_|_\\___/ |_/_/ \_\___/\___/|___/ |_|_\___/_/ \_\____|_| |___|_|  |_|___|
+
+  >> MONITORAMENTO GPS DE ALTA PERFORMANCE — RIO DE JANEIRO <<
+  >> BUILD: NETLIFY EDGE  |  ENGINE: WEBGL  |  STATUS: [ONLINE] <<
+```
 
 ![Demonstração do Mapa](./assets/preview.png)
 
@@ -9,7 +17,21 @@
 ![Node.js](https://img.shields.io/badge/Node.js-Serverless-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)
 ![Netlify](https://img.shields.io/badge/Netlify-Edge-00C7B7?style=for-the-badge&logo=netlify&logoColor=white)
 
-Plataforma de monitoramento GPS em tempo real da frota de ônibus da cidade do Rio de Janeiro. Desenvolvida com foco em **extrema performance de renderização (WebGL)** e resiliência de rede, a aplicação é capaz de processar e desenhar mais de 4.000 pontos em movimento simultaneamente sobre camadas pesadas de satélite, sem gargalos de CPU ou GPU.
+Plataforma de monitoramento GPS em tempo real da frota de ônibus da cidade do Rio de Janeiro. Desenvolvida com foco em **extrema performance de renderização (WebGL)** e resiliência de rede, a aplicação processa e desenha mais de 4.000 pontos em movimento simultaneamente sobre camadas de satélite, com animação suave entre atualizações e múltiplas camadas de análise.
+
+---
+
+## 🗺️ Funcionalidades
+
+* **Posicionamento em tempo real** — dados GPS atualizados a cada 30 segundos via API pública da Mobilidade Rio.
+* **Animação de movimento** — ao chegar novos dados, cada ônibus desliza suavemente da posição anterior para a nova (interpolação com easing, 4s).
+* **Cor por velocidade** — ícone muda de cor em tempo real: 🟢 em movimento (>20 km/h) · 🟡 lento (1–20 km/h) · 🔴 parado (0 km/h).
+* **Filtro por linha** — campo de busca que exibe apenas os ônibus da linha digitada, com contagem ao vivo.
+* **Trail do ônibus** — ao clicar em um ônibus, exibe as últimas 10 posições registradas como trilha pontilhada no mapa.
+* **Cluster em zoom baixo** — ao afastar o mapa (zoom ≤ 10), ônibus próximos se agrupam em bolhas com contagem; clicar dá zoom automático no grupo.
+* **Heatmap de densidade** — camada de calor ativável por botão, mostrando concentração da frota em toda a cidade.
+* **Painel de estatísticas** — exibe frota ativa, % de ônibus parados, velocidade média e linha com mais ônibus em operação.
+* **Cache offline** — último estado válido salvo no `localStorage`; se a API falhar, o mapa exibe os dados em cache com indicador de idade.
 
 A interface conta com **duas abas de mapa** para comparação side-by-side das engines: **MapLibre GL** (open-source, sem token) e **Mapbox GL** (carregado de forma lazy apenas quando ativado).
 
@@ -19,20 +41,21 @@ A interface conta com **duas abas de mapa** para comparação side-by-side das e
 
 Para garantir que o mapa rode a 60 FPS mesmo com milhares de SVGs e textos dinâmicos, o projeto conta com uma arquitetura *Zero-Bottleneck*:
 
-### 🖥️ Otimizações de GPU / WebGL
-* **Bypass de Colisão Assíncrona (`text-ignore-placement`):** Desativa o recálculo do Worker para sobreposição de textos, forçando a GPU a desenhar as *labels* instantaneamente, prevenindo estouro de memória (VertexArray Mismatch).
-* **Culling de Câmera e Antialiasing (`minzoom`, `antialias: false`):** Suavização de pixels desativada para poupar ciclos da placa de vídeo. Textos só são injetados no pipeline de renderização se o usuário estiver em um nível de zoom legível.
-* **Network Trapping (`maxBounds`):** Câmera travada nas coordenadas do RJ, impedindo que o navegador faça o download de *tiles* de satélite inúteis caso o usuário arraste o mapa para longe.
+### 🖥️ GPU / WebGL (MapLibre)
+* **Bypass de Colisão Assíncrona (`text-ignore-placement`):** Desativa o recálculo do Worker para sobreposição de textos, forçando a GPU a desenhar as *labels* instantaneamente.
+* **Culling de Câmera (`minzoom`, `antialias: false`):** Suavização de pixels desativada para poupar ciclos de GPU. Textos só entram no pipeline se o zoom for legível.
+* **Network Trapping (`maxBounds`):** Câmera travada no RJ, impedindo download de *tiles* inúteis.
+* **Expressão nativa de cor (`icon-image: case`):** A seleção de ícone por velocidade roda inteiramente na GPU via expressão MapLibre — zero JavaScript por frame.
 
-### 🧠 Otimizações de CPU (Source Data)
-* **Algoritmo de Simplificação Desativado (`tolerance: 0`):** Remove o overhead do algoritmo de Douglas-Peucker (útil apenas para polígonos/linhas), poupando a CPU ao injetar dados estritamente pontuais.
-* **Buffer Zero (`buffer: 0`):** Impede a engine de pré-calcular colisões de geometria fora do limite visível da tela (*viewport*).
+### 🧠 CPU (Source Data)
+* **Formato compacto no payload:** A Netlify Function entrega arrays `[id, linha, vel, lng, lat]` em vez de GeoJSON completo — redução de ~70% no tamanho do payload (~600 KB vs ~3 MB).
+* **Algoritmo de Simplificação Desativado (`tolerance: 0`):** Remove o overhead do Douglas-Peucker, útil apenas para polígonos.
+* **Cluster nativo MapLibre:** Agrupamento de pontos feito na engine em C++ (WASM), sem custo no thread principal.
 
-### 🌐 Arquitetura Serverless & Resiliência (Proxy API)
-* **Edge Proxying:** Consumo da API pública da Mobilidade Rio encapsulado em uma Netlify Function (Node.js) para contornar problemas de CORS.
-* **Fail-Fast Architecture:** Implementação de um `timeout` estrito de 8 segundos no socket HTTPS. Se a API de origem engargalar, o proxy corta a conexão imediatamente (retornando `504 Gateway Timeout`), protegendo a *thread* principal e evitando o bloqueio da interface do usuário.
-* **Decompressão Zlib:** Tratamento nativo de *streams* em `gzip/deflate` na borda para minimizar o *payload* trafegado.
-* **Token Seguro via Serverless:** O token do Mapbox é servido pela Netlify Function `get-mapbox-token` e nunca fica exposto diretamente no HTML estático.
+### 🌐 Serverless & Resiliência (Proxy API)
+* **Edge Proxying:** API pública da Mobilidade Rio encapsulada em Netlify Function para contornar CORS.
+* **Streaming Parcial com Deadline de 7s:** A função corta o stream, repara o JSON parcial no último objeto completo e retorna os ônibus já recebidos — evita 504 com mapa vazio.
+* **Decompressão Zlib:** Tratamento nativo de streams `gzip/deflate` na borda.
 
 ---
 
@@ -69,8 +92,8 @@ Como a aplicação exige um backend Serverless para contornar o CORS da API púb
 
 1. Clone o repositório:
 ```bash
-git clone https://github.com/brunokobi/map-bus.git
-cd map-bus
+git clone https://github.com/brunokobi/frotarealtime.git
+cd frotarealtime
 ```
 
 2. Instale as dependências:
@@ -78,32 +101,9 @@ cd map-bus
 npm install
 ```
 
-3. Configure o token do Mapbox criando um arquivo `.env` na raiz:
-```env
-VITE_MAPBOX_TOKEN=pk.eyJ1...seu_token_aqui
-```
-
-4. Inicie o servidor de desenvolvimento com o Netlify CLI:
+3. Inicie o servidor local com emulação de Functions:
 ```bash
 netlify dev
 ```
 
-5. Acesse `http://localhost:8888` no navegador.
-
-> A aba **MapLibre GL** funciona sem token. A aba **Mapbox GL** requer o `VITE_MAPBOX_TOKEN` configurado.
-
----
-
-## 📁 Estrutura do Projeto
-
-```
-map-bus/
-├── index.html                        # Aplicação SPA (CSS + JS embutidos)
-├── netlify/
-│   └── functions/
-│       ├── get-rio.js                # Proxy da API Mobilidade Rio (GPS)
-│       └── get-mapbox-token.js       # Serve o token Mapbox com segurança
-├── assets/
-│   └── preview.png
-└── package.json
-```
+4. Acesse `http://localhost:8888`
