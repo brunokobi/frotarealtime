@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Frota Realtime RJ - Alta Performance</title>
-    
+
     <link href="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+
     <style>
         :root {
             --bg-dark: #0a0a0a;
@@ -20,18 +20,18 @@
             --border-color: #222222;
         }
 
-        body { 
-            margin: 0; 
-            padding: 0; 
-            width: 100%; 
-            height: 100vh; 
-            background: #000; 
-            overflow: hidden; 
+        body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100vh;
+            background: #000;
+            overflow: hidden;
             display: flex;
             flex-direction: column;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         }
-        
+
         /* ---------------- HEADER ---------------- */
         .ia-header {
             background-color: var(--bg-dark);
@@ -60,10 +60,10 @@
 
         /* Barra de Navegação */
         .nav-bar {
-            display: flex; 
+            display: flex;
             justify-content: flex-start;
             align-items: center;
-            padding: 10px 24px; 
+            padding: 10px 24px;
             overflow-x: auto;
         }
 
@@ -76,6 +76,34 @@
         .nav-links a.active { border-bottom: 2px solid var(--neon-green); padding-bottom: 2px; }
         .nav-links i { font-size: 14px; }
 
+        /* ---------------- TABS ---------------- */
+        .tab-bar {
+            display: flex;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 9px 16px;
+            background: none;
+            border: none;
+            border-bottom: 2px solid transparent;
+            color: var(--text-muted);
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: color 0.2s, border-color 0.2s, background 0.2s;
+        }
+        .tab-btn:hover { color: var(--text-main); background: rgba(255,255,255,0.03); }
+        .tab-btn.active { color: var(--neon-green); border-bottom-color: var(--neon-green); }
+        .tab-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+        .tab-btn + .tab-btn { border-left: 1px solid var(--border-color); }
 
         /* ---------------- ÁREA DO MAPA ---------------- */
         .map-container {
@@ -84,20 +112,33 @@
             width: 100%;
         }
 
-        #map { width: 100%; height: 100%; }
-        
-        #panel { 
-            position: absolute; top: 15px; left: 15px; background: rgba(15, 15, 15, 0.90); 
-            color: #00ffcc; padding: 12px 16px; font-family: monospace; font-size: 13px; 
-            border-radius: 6px; z-index: 10; border: 1px solid #333; 
-            box-shadow: 0 4px 12px rgba(0,0,0,0.8); min-width: 200px;
+        .map-view {
+            position: absolute;
+            inset: 0;
+            display: none;
         }
-        
+        .map-view.active { display: block; }
+
+        #map, #map-mapbox { width: 100%; height: 100%; }
+
+        /* ---------------- PANEL ---------------- */
+        .panel {
+            position: absolute; top: 15px; left: 15px;
+            background: rgba(15, 15, 15, 0.90);
+            color: #00ffcc; padding: 12px 16px;
+            font-family: monospace; font-size: 13px;
+            border-radius: 6px; z-index: 10;
+            border: 1px solid #333;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.8);
+            min-width: 200px;
+        }
+
         .metric { color: #fff; font-weight: bold; }
         hr { border: 0; border-top: 1px solid #333; margin: 8px 0; }
 
-        /* ---------------- MODAL (Popup do Mapa) ---------------- */
-        .maplibregl-popup-content {
+        /* ---------------- POPUP (MapLibre + Mapbox compartilhados) ---------------- */
+        .maplibregl-popup-content,
+        .mapboxgl-popup-content {
             background-color: var(--bg-modal) !important;
             color: #ffffff !important;
             border: 1px solid var(--neon-green) !important;
@@ -107,41 +148,47 @@
             font-family: monospace !important;
             min-width: 220px !important;
         }
-        
-        .maplibregl-popup-content b {
+
+        .maplibregl-popup-content b,
+        .mapboxgl-popup-content b {
             color: var(--text-muted) !important;
             font-weight: 400;
             margin-right: 8px;
             text-transform: uppercase;
             font-size: 11px;
         }
-        
-        .maplibregl-popup-content span.modal-value {
+
+        .maplibregl-popup-content span.modal-value,
+        .mapboxgl-popup-content span.modal-value {
             color: #ffffff !important;
             font-weight: 700;
             font-size: 13px;
         }
 
-        .maplibregl-popup-content span.modal-linha {
+        .maplibregl-popup-content span.modal-linha,
+        .mapboxgl-popup-content span.modal-linha {
             color: var(--accent-yellow) !important;
             font-weight: 700;
             font-size: 13px;
         }
 
-        .maplibregl-popup-tip {
+        .maplibregl-popup-tip,
+        .mapboxgl-popup-tip {
             border-top-color: var(--bg-modal) !important;
             border-bottom-color: var(--bg-modal) !important;
             border-left-color: var(--bg-modal) !important;
             border-right-color: var(--bg-modal) !important;
         }
-        
-        .maplibregl-popup-close-button {
+
+        .maplibregl-popup-close-button,
+        .mapboxgl-popup-close-button {
             color: var(--neon-green) !important;
             font-size: 18px !important;
             top: 5px !important;
             right: 5px !important;
         }
-        .maplibregl-popup-close-button:hover {
+        .maplibregl-popup-close-button:hover,
+        .mapboxgl-popup-close-button:hover {
             color: var(--accent-yellow) !important;
             background-color: transparent !important;
         }
@@ -207,7 +254,14 @@
                 padding-left: 17px;
             }
 
-            #panel {
+            .tab-btn {
+                font-size: 11px;
+                padding: 8px 6px;
+                letter-spacing: 0.5px;
+                gap: 6px;
+            }
+
+            .panel {
                 font-size: 11px;
                 padding: 8px 10px;
                 min-width: 0;
@@ -215,7 +269,8 @@
                 left: 10px;
             }
 
-            .maplibregl-popup-content {
+            .maplibregl-popup-content,
+            .mapboxgl-popup-content {
                 min-width: 170px !important;
                 padding: 12px 14px !important;
                 font-size: 12px !important;
@@ -256,11 +311,26 @@
                 <a href="https://github.com/brunokobi" target="_blank"><i class="fa-brands fa-github"></i> Github</a>
             </nav>
         </div>
+
+        <div class="tab-bar">
+            <button class="tab-btn active" data-tab="maplibre">
+                <i class="fa-solid fa-map"></i> MapLibre GL
+            </button>
+            <button class="tab-btn" data-tab="mapbox">
+                <i class="fa-solid fa-location-dot"></i> Mapbox GL
+            </button>
+        </div>
     </header>
 
     <main class="map-container">
-        <div id="panel">📡 Inicializando satélite...</div>
-        <div id="map"></div>
+        <div id="view-maplibre" class="map-view active">
+            <div class="panel" id="panel-maplibre">📡 Inicializando satélite...</div>
+            <div id="map"></div>
+        </div>
+        <div id="view-mapbox" class="map-view">
+            <div class="panel" id="panel-mapbox">🗺️ Clique na aba para ativar o Mapbox</div>
+            <div id="map-mapbox"></div>
+        </div>
     </main>
 
     <script src="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js"></script>
@@ -268,11 +338,22 @@
     <script>
         let fetchTimeGlobal = "0.00";
         let t1Global = 0;
+        let currentTab = 'maplibre';
+        let mapboxMap = null;
+        let mapboxInitialized = false;
+        let mapboxLoading = false;
+        let mapboxLayerReady = false;
+        let maplibreLayerReady = false;
+        let lastGeoJSON = null;
 
-        const map = new maplibregl.Map({
+        const busSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#00ffcc"><path d="M4 16c0 .88.39 1.67 1 2.22v1.28c0 .83.67 1.5 1.5 1.5S8 20.33 8 19.5V19h8v.5c0 .82.67 1.5 1.5 1.5.82 0 1.5-.67 1.5-1.5v-1.28c.61-.55 1-1.34 1-2.22V6c0-3.5-3.58-4-8-4s-8 .5-8 4v10zm3.5 1c-.83 0-1.5-.67-1.5-1.5S6.67 14 7.5 14s1.5.67 1.5 1.5S8.33 17 7.5 17zm9 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm1.5-6H6V6h12v5z"/></svg>`;
+        const busSvgUrl = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(busSvg);
+
+        // ===================== MAPLIBRE =====================
+        const maplibreMap = new maplibregl.Map({
             container: 'map',
-            antialias: false, // PERFORMANCE GPU: Desativa o antialiasing pesado nos frames raster
-            maxBounds: [[-44.5, -23.5], [-42.5, -22.0]], // PERFORMANCE REDE: Trava a câmera no RJ (evita carregar tiles infinitos)
+            antialias: false,
+            maxBounds: [[-44.5, -23.5], [-42.5, -22.0]],
             style: {
                 version: 8,
                 glyphs: "https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf",
@@ -286,45 +367,43 @@
                 },
                 layers: [{ id: 'satellite-layer', type: 'raster', source: 'satellite' }]
             },
-            center: [-43.385, -22.915], 
+            center: [-43.385, -22.915],
             zoom: 11
         });
 
-        const busSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#00ffcc"><path d="M4 16c0 .88.39 1.67 1 2.22v1.28c0 .83.67 1.5 1.5 1.5S8 20.33 8 19.5V19h8v.5c0 .82.67 1.5 1.5 1.5.82 0 1.5-.67 1.5-1.5v-1.28c.61-.55 1-1.34 1-2.22V6c0-3.5-3.58-4-8-4s-8 .5-8 4v10zm3.5 1c-.83 0-1.5-.67-1.5-1.5S6.67 14 7.5 14s1.5.67 1.5 1.5S8.33 17 7.5 17zm9 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm1.5-6H6V6h12v5z"/></svg>`;
-        
-        map.on('load', () => {
+        maplibreMap.on('load', () => {
             const img = new Image(24, 24);
             img.onload = () => {
-                map.addImage('bus-icon', img);
-                initLayers();
+                maplibreMap.addImage('bus-icon', img);
+                initMaplibreLayers();
             };
-            img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(busSvg);
+            img.src = busSvgUrl;
         });
 
-        function initLayers() {
-            map.addSource('frota-onibus', {
+        function initMaplibreLayers() {
+            maplibreMap.addSource('frota-onibus', {
                 type: 'geojson',
                 data: { type: 'FeatureCollection', features: [] },
-                tolerance: 0, // PERFORMANCE CPU: Desativa algoritmo de simplificação espacial para pontos
-                buffer: 0     // PERFORMANCE CPU: Ignora geração de buffer além do limite visível
+                tolerance: 0,
+                buffer: 0
             });
 
-            map.addLayer({
+            maplibreMap.addLayer({
                 id: 'layer-onibus',
                 type: 'symbol',
                 source: 'frota-onibus',
-                minzoom: 10, // PERFORMANCE GPU: Esconde pontos se o usuário se afastar demais (evita gargalo de texto)
+                minzoom: 10,
                 layout: {
                     'icon-image': 'bus-icon',
                     'icon-size': 0.8,
-                    'icon-allow-overlap': true, 
+                    'icon-allow-overlap': true,
                     'text-field': ['get', 'linha'],
-                    'text-font': ['Noto Sans Bold'], 
+                    'text-font': ['Noto Sans Bold'],
                     'text-size': 11,
                     'text-offset': [0, 1.2],
                     'text-anchor': 'top',
-                    'text-ignore-placement': true, // Corta processamento no algoritmo de colisão do Worker
-                    'text-allow-overlap': false 
+                    'text-ignore-placement': true,
+                    'text-allow-overlap': false
                 },
                 paint: {
                     'text-color': '#ffeb3b',
@@ -333,13 +412,12 @@
                 }
             });
 
-            map.on('data', (e) => {
+            maplibreMap.on('data', (e) => {
                 if (e.sourceId === 'frota-onibus' && e.isSourceLoaded) {
                     const renderTimeSec = ((performance.now() - t1Global) / 1000).toFixed(2);
-                    const featuresCount = map.querySourceFeatures('frota-onibus').length;
-                    
+                    const featuresCount = maplibreMap.querySourceFeatures('frota-onibus').length;
                     if (featuresCount > 0) {
-                        document.getElementById('panel').innerHTML = `
+                        document.getElementById('panel-maplibre').innerHTML = `
                             🟢 <b>SISTEMA ONLINE</b><br>
                             <hr>
                             Frota Ativa: <span class="metric">${featuresCount}</span><br>
@@ -350,41 +428,201 @@
                 }
             });
 
-            map.on('click', 'layer-onibus', (e) => {
+            maplibreMap.on('click', 'layer-onibus', (e) => {
                 const coord = e.features[0].geometry.coordinates.slice();
                 const props = e.features[0].properties;
-                
-                const popupHtml = `
-                    <div>
-                        <b>NÚMERO:</b> <span class="modal-value">${props.id}</span>
-                    </div>
-                    <div style="margin-top: 6px;">
-                        <b>LINHA:</b> <span class="modal-linha">${props.linha}</span>
-                    </div>
-                    <div style="margin-top: 6px;">
-                        <b>VELOCIDADE:</b> <span class="modal-value">${props.velocidade} km/h</span>
-                    </div>
-                `;
-
-                new maplibregl.Popup({
-                    offset: 10,
-                    anchor: 'bottom',
-                    closeButton: true,
-                    closeOnClick: true
-                })
+                new maplibregl.Popup({ offset: 10, anchor: 'bottom', closeButton: true, closeOnClick: true })
                     .setLngLat(coord)
-                    .setHTML(popupHtml)
-                    .addTo(map);
+                    .setHTML(`
+                        <div><b>NÚMERO:</b> <span class="modal-value">${props.id}</span></div>
+                        <div style="margin-top:6px"><b>LINHA:</b> <span class="modal-linha">${props.linha}</span></div>
+                        <div style="margin-top:6px"><b>VELOCIDADE:</b> <span class="modal-value">${props.velocidade} km/h</span></div>
+                    `)
+                    .addTo(maplibreMap);
             });
 
-            map.on('mouseenter', 'layer-onibus', () => map.getCanvas().style.cursor = 'pointer');
-            map.on('mouseleave', 'layer-onibus', () => map.getCanvas().style.cursor = '');
+            maplibreMap.on('mouseenter', 'layer-onibus', () => maplibreMap.getCanvas().style.cursor = 'pointer');
+            maplibreMap.on('mouseleave', 'layer-onibus', () => maplibreMap.getCanvas().style.cursor = '');
 
+            maplibreLayerReady = true;
             fetchPositions();
-            setInterval(fetchPositions, 30000); 
+            setInterval(fetchPositions, 30000);
         }
 
-        // Hamburger menu — mobile nav toggle
+        // ===================== MAPBOX =====================
+        async function loadMapboxLibrary() {
+            const link = document.createElement('link');
+            link.rel = 'stylesheet';
+            link.href = 'https://api.mapbox.com/mapbox-gl-js/v3.6.0/mapbox-gl.css';
+            document.head.appendChild(link);
+
+            await new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = 'https://api.mapbox.com/mapbox-gl-js/v3.6.0/mapbox-gl.js';
+                script.onload = resolve;
+                script.onerror = reject;
+                document.head.appendChild(script);
+            });
+        }
+
+        async function initMapbox() {
+            document.getElementById('panel-mapbox').innerHTML = '⏳ <b>CARREGANDO MAPBOX...</b>';
+
+            await loadMapboxLibrary();
+
+            const res = await fetch('/.netlify/functions/get-mapbox-token');
+            if (!res.ok) throw new Error('Falha ao obter token Mapbox');
+            const { token } = await res.json();
+
+            mapboxgl.accessToken = token;
+
+            mapboxMap = new mapboxgl.Map({
+                container: 'map-mapbox',
+                style: 'mapbox://styles/mapbox/satellite-v9',
+                center: [-43.385, -22.915],
+                zoom: 11,
+                maxBounds: [[-44.5, -23.5], [-42.5, -22.0]],
+                antialias: false
+            });
+
+            mapboxMap.on('load', () => {
+                const img = new Image(24, 24);
+                img.onload = () => {
+                    mapboxMap.addImage('bus-icon', img);
+                    initMapboxLayers();
+                };
+                img.src = busSvgUrl;
+            });
+        }
+
+        function initMapboxLayers() {
+            mapboxMap.addSource('frota-onibus-mapbox', {
+                type: 'geojson',
+                data: { type: 'FeatureCollection', features: [] }
+            });
+
+            mapboxMap.addLayer({
+                id: 'layer-onibus-mapbox',
+                type: 'symbol',
+                source: 'frota-onibus-mapbox',
+                minzoom: 10,
+                layout: {
+                    'icon-image': 'bus-icon',
+                    'icon-size': 0.8,
+                    'icon-allow-overlap': true,
+                    'text-field': ['get', 'linha'],
+                    'text-font': ['DIN Offc Pro Bold', 'Arial Unicode MS Bold'],
+                    'text-size': 11,
+                    'text-offset': [0, 1.2],
+                    'text-anchor': 'top',
+                    'text-ignore-placement': true,
+                    'text-allow-overlap': false
+                },
+                paint: {
+                    'text-color': '#ffeb3b',
+                    'text-halo-color': '#000000',
+                    'text-halo-width': 2
+                }
+            });
+
+            mapboxMap.on('data', (e) => {
+                if (e.sourceId === 'frota-onibus-mapbox' && e.isSourceLoaded) {
+                    const renderTimeSec = ((performance.now() - t1Global) / 1000).toFixed(2);
+                    const featuresCount = mapboxMap.querySourceFeatures('frota-onibus-mapbox').length;
+                    if (featuresCount > 0) {
+                        document.getElementById('panel-mapbox').innerHTML = `
+                            🟢 <b>SISTEMA ONLINE</b><br>
+                            <hr>
+                            Frota Ativa: <span class="metric">${featuresCount}</span><br>
+                            Fetch & Parse: <span class="metric">${fetchTimeGlobal} s</span><br>
+                            Render GPU: <span class="metric">${renderTimeSec} s</span>
+                        `;
+                    }
+                }
+            });
+
+            mapboxMap.on('click', 'layer-onibus-mapbox', (e) => {
+                const coord = e.features[0].geometry.coordinates.slice();
+                const props = e.features[0].properties;
+                new mapboxgl.Popup({ offset: 10, anchor: 'bottom', closeButton: true, closeOnClick: true })
+                    .setLngLat(coord)
+                    .setHTML(`
+                        <div><b>NÚMERO:</b> <span class="modal-value">${props.id}</span></div>
+                        <div style="margin-top:6px"><b>LINHA:</b> <span class="modal-linha">${props.linha}</span></div>
+                        <div style="margin-top:6px"><b>VELOCIDADE:</b> <span class="modal-value">${props.velocidade} km/h</span></div>
+                    `)
+                    .addTo(mapboxMap);
+            });
+
+            mapboxMap.on('mouseenter', 'layer-onibus-mapbox', () => mapboxMap.getCanvas().style.cursor = 'pointer');
+            mapboxMap.on('mouseleave', 'layer-onibus-mapbox', () => mapboxMap.getCanvas().style.cursor = '');
+
+            mapboxLayerReady = true;
+            mapboxInitialized = true;
+
+            if (lastGeoJSON) {
+                mapboxMap.getSource('frota-onibus-mapbox').setData(lastGeoJSON);
+            }
+        }
+
+        // ===================== TABS =====================
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const tab = btn.dataset.tab;
+                if (tab === currentTab || mapboxLoading) return;
+
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                document.querySelectorAll('.map-view').forEach(v => v.classList.remove('active'));
+                document.getElementById('view-' + tab).classList.add('active');
+                currentTab = tab;
+
+                if (tab === 'mapbox' && !mapboxInitialized) {
+                    mapboxLoading = true;
+                    document.querySelectorAll('.tab-btn').forEach(b => b.disabled = true);
+                    try {
+                        await initMapbox();
+                    } catch (err) {
+                        console.error('Erro ao carregar Mapbox:', err);
+                        document.getElementById('panel-mapbox').innerHTML = '🔴 <b>ERRO AO CARREGAR MAPBOX</b><br><hr><span style="color:#ff4444;font-size:11px;">Verifique o token e tente novamente</span>';
+                    } finally {
+                        mapboxLoading = false;
+                        document.querySelectorAll('.tab-btn').forEach(b => b.disabled = false);
+                    }
+                }
+
+                // Resize o mapa ativo para ajustar ao container visível
+                if (tab === 'maplibre') maplibreMap.resize();
+                if (tab === 'mapbox' && mapboxMap) setTimeout(() => mapboxMap.resize(), 0);
+            });
+        });
+
+        // ===================== FETCH =====================
+        async function fetchPositions() {
+            const panelId = 'panel-' + currentTab;
+            try {
+                const t0 = performance.now();
+                document.getElementById(panelId).innerHTML = `⏳ <b>BAIXANDO DADOS...</b><br><hr><span style="color:#aaa; font-size:11px;">Aguardando API (max 8s)</span>`;
+
+                const res = await fetch('/.netlify/functions/get-rio');
+                if (!res.ok) throw new Error("Erro no Serverless");
+
+                const geojson = await res.json();
+                lastGeoJSON = geojson;
+
+                t1Global = performance.now();
+                fetchTimeGlobal = ((t1Global - t0) / 1000).toFixed(2);
+
+                if (maplibreLayerReady) maplibreMap.getSource('frota-onibus').setData(geojson);
+                if (mapboxLayerReady) mapboxMap.getSource('frota-onibus-mapbox').setData(geojson);
+
+            } catch (err) {
+                console.error("Erro no ciclo de atualização:", err);
+                document.getElementById(panelId).innerHTML = `🔴 <b>ERRO DE CONEXÃO</b><br><hr><span style="color:#ff4444; font-size:11px;">Aguardando próximo ciclo...</span>`;
+            }
+        }
+
+        // ===================== HAMBURGER =====================
         (function () {
             const btn = document.getElementById('hamburger-btn');
             const icon = document.getElementById('hamburger-icon');
@@ -396,7 +634,6 @@
                 icon.className = isOpen ? 'fa-solid fa-xmark' : 'fa-solid fa-bars';
             });
 
-            // Fecha o menu ao clicar em qualquer link
             navBar.querySelectorAll('a').forEach(link => {
                 link.addEventListener('click', () => {
                     navBar.classList.remove('open');
@@ -405,27 +642,6 @@
                 });
             });
         })();
-
-        async function fetchPositions() {
-            try {
-                const t0 = performance.now();
-                document.getElementById('panel').innerHTML = `⏳ <b>BAIXANDO DADOS...</b><br><hr><span style="color:#aaa; font-size:11px;">Aguardando API (max 8s)</span>`;
-
-                const res = await fetch('/.netlify/functions/get-rio');
-                if (!res.ok) throw new Error("Erro no Serverless");
-                
-                const geojson = await res.json();
-                
-                t1Global = performance.now();
-                fetchTimeGlobal = ((t1Global - t0) / 1000).toFixed(2);
-
-                map.getSource('frota-onibus').setData(geojson);
-                
-            } catch (err) {
-                console.error("Erro no ciclo de atualização:", err);
-                document.getElementById('panel').innerHTML = `🔴 <b>ERRO DE CONEXÃO</b><br><hr><span style="color:#ff4444; font-size:11px;">Aguardando próximo ciclo...</span>`;
-            }
-        }
     </script>
 </body>
 </html>
