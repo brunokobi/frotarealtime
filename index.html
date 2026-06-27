@@ -183,7 +183,8 @@
         .maplibregl-popup-close-button, .mapboxgl-popup-close-button { color: var(--neon-green) !important; font-size: 18px !important; top: 5px !important; right: 5px !important; }
         .maplibregl-popup-close-button:hover, .mapboxgl-popup-close-button:hover { color: var(--accent-yellow) !important; background-color: transparent !important; }
 
-        /* ---------------- HAMBURGER ---------------- */
+        /* ---------------- HAMBURGER / HELP ---------------- */
+        .top-bar-right { display: flex; align-items: center; gap: 8px; }
         .hamburger-btn {
             display: none; background: none; border: 1px solid var(--border-color);
             color: var(--neon-green); font-size: 18px; cursor: pointer;
@@ -191,6 +192,56 @@
             align-items: center; line-height: 1;
         }
         .hamburger-btn:hover { border-color: var(--neon-green); }
+        #btn-help {
+            background: none; border: 1px solid #333; color: #555; font-size: 15px;
+            font-weight: 700; font-family: serif; cursor: pointer;
+            width: 32px; height: 32px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            transition: color 0.2s, border-color 0.2s; flex-shrink: 0;
+        }
+        #btn-help:hover { color: var(--neon-green); border-color: var(--neon-green); }
+
+        /* ---------------- MODAL DE AJUDA ---------------- */
+        .help-overlay {
+            display: none; position: fixed; inset: 0; z-index: 1000;
+            background: rgba(0,0,0,0.88); align-items: center; justify-content: center; padding: 16px;
+        }
+        .help-overlay.open { display: flex; }
+        .help-modal {
+            background: #0f0f0f; border: 1px solid #2a2a2a; border-radius: 10px;
+            max-width: 660px; width: 100%; max-height: 88vh; overflow-y: auto;
+            padding: 28px 32px; color: #fff;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.95);
+        }
+        .help-modal h2 {
+            color: var(--neon-green); font-size: 14px; letter-spacing: 1px; text-transform: uppercase;
+            margin: 0 0 20px; display: flex; align-items: center; gap: 10px; font-family: monospace;
+        }
+        .help-close { margin-left: auto; color: #444; cursor: pointer; font-size: 26px; line-height: 1; font-weight: 300; }
+        .help-close:hover { color: #ff4444; }
+        .compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+        .compare-card {
+            background: rgba(255,255,255,0.03); border: 1px solid #222;
+            border-radius: 8px; padding: 16px;
+        }
+        .compare-card h3 {
+            font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
+            margin: 0 0 12px; display: flex; align-items: center; gap: 8px;
+        }
+        .compare-card.ml h3 { color: var(--neon-green); }
+        .compare-card.mb h3 { color: var(--neon-blue); }
+        .compare-list { list-style: none; margin: 0; padding: 0; font-size: 12px; line-height: 2; color: #bbb; }
+        .compare-list .pro::before { content: '✅ '; }
+        .compare-list .con::before { content: '❌ '; }
+        .help-note {
+            margin-top: 14px; padding: 11px 14px;
+            background: rgba(0,255,204,0.04); border: 1px solid rgba(0,255,204,0.13);
+            border-radius: 6px; font-size: 11px; color: #888; line-height: 1.7;
+        }
+        @media (max-width: 560px) {
+            .compare-grid { grid-template-columns: 1fr; }
+            .help-modal { padding: 20px 16px; }
+        }
 
         /* ---------------- MOBILE ---------------- */
         @media (max-width: 768px) {
@@ -235,9 +286,12 @@
                     <div class="brand-subtitle">Monitoramento GPS de alta performance</div>
                 </div>
             </div>
-            <button class="hamburger-btn" id="hamburger-btn" aria-label="Abrir menu" aria-expanded="false">
-                <i class="fa-solid fa-bars" id="hamburger-icon"></i>
-            </button>
+            <div class="top-bar-right">
+                <button class="hamburger-btn" id="hamburger-btn" aria-label="Abrir menu" aria-expanded="false">
+                    <i class="fa-solid fa-bars" id="hamburger-icon"></i>
+                </button>
+                <button id="btn-help" title="Comparar engines de mapa" aria-label="Ajuda">?</button>
+            </div>
         </div>
 
         <div class="nav-bar">
@@ -307,6 +361,53 @@
             </div>
         </div>
     </main>
+
+    <!-- Modal de comparação de engines -->
+    <div class="help-overlay" id="help-overlay">
+        <div class="help-modal">
+            <h2>
+                <i class="fa-solid fa-code-compare"></i> MapLibre GL vs Mapbox GL
+                <span class="help-close" id="help-close">×</span>
+            </h2>
+            <div class="compare-grid">
+                <div class="compare-card ml">
+                    <h3><i class="fa-solid fa-map"></i> MapLibre GL</h3>
+                    <ul class="compare-list">
+                        <li class="pro">Open-source — licença BSD</li>
+                        <li class="pro">Sem token, custo zero</li>
+                        <li class="pro">Sem limite de requisições</li>
+                        <li class="pro">Self-hosted completo</li>
+                        <li class="pro">Sem telemetria obrigatória</li>
+                        <li class="pro">Mantido ativamente pela comunidade</li>
+                        <li class="con">Styles prontos limitados</li>
+                        <li class="con">Sem APIs de geocoding/rotas próprias</li>
+                        <li class="con">3D buildings exige fonte de dados externa</li>
+                        <li class="con">Ecossistema de plugins menor</li>
+                    </ul>
+                </div>
+                <div class="compare-card mb">
+                    <h3><i class="fa-solid fa-location-dot"></i> Mapbox GL</h3>
+                    <ul class="compare-list">
+                        <li class="pro">Styles premium (Satellite Streets, Standard)</li>
+                        <li class="pro">Prédios 3D nativos (composite tileset)</li>
+                        <li class="pro">Névoa, iluminação solar, globe projection</li>
+                        <li class="pro">APIs: Geocoding, Directions, Isochrone</li>
+                        <li class="pro">Suporte comercial oficial (Mapbox Inc.)</li>
+                        <li class="pro">Iluminação PBR no Mapbox Standard v3</li>
+                        <li class="con">Token obrigatório (pk.*)</li>
+                        <li class="con">Free tier: 50 mil map loads/mês</li>
+                        <li class="con">Licença proprietária</li>
+                        <li class="con">Telemetria ativa por padrão</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="help-note">
+                💡 <b style="color:#00ffcc">Neste projeto</b> ambas as engines recebem os mesmos dados GPS em tempo real
+                e executam as mesmas animações de 4 s. O botão <b>📊 Análise</b> mede FPS e latência do primeiro
+                frame lado a lado para uma comparação objetiva de performance de renderização.
+            </div>
+        </div>
+    </div>
 
     <script src="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js"></script>
 
@@ -850,6 +951,15 @@
             const navBar = document.querySelector('.nav-bar');
             btn.addEventListener('click', () => { const isOpen = navBar.classList.toggle('open'); btn.setAttribute('aria-expanded', isOpen); icon.className = isOpen ? 'fa-solid fa-xmark' : 'fa-solid fa-bars'; });
             navBar.querySelectorAll('a').forEach(link => { link.addEventListener('click', () => { navBar.classList.remove('open'); btn.setAttribute('aria-expanded', 'false'); icon.className = 'fa-solid fa-bars'; }); });
+        })();
+
+        // ===================== HELP MODAL =====================
+        (function () {
+            const overlay = document.getElementById('help-overlay');
+            document.getElementById('btn-help').addEventListener('click', () => overlay.classList.add('open'));
+            document.getElementById('help-close').addEventListener('click', () => overlay.classList.remove('open'));
+            overlay.addEventListener('click', e => { if (e.target === overlay) overlay.classList.remove('open'); });
+            document.addEventListener('keydown', e => { if (e.key === 'Escape') overlay.classList.remove('open'); });
         })();
     </script>
 </body>

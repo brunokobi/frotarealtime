@@ -32,8 +32,11 @@ Plataforma de monitoramento GPS em tempo real da frota de ônibus da cidade do R
 * **Heatmap de densidade** — camada de calor ativável por botão, mostrando concentração da frota em toda a cidade.
 * **Painel de estatísticas** — exibe frota ativa, % de ônibus parados, velocidade média e linha com mais ônibus em operação.
 * **Cache offline** — último estado válido salvo no `localStorage`; se a API falhar, o mapa exibe os dados em cache com indicador de idade.
+* **Painel de análise de renderização** — botão 📊 Análise compara FPS, frame time e latência do primeiro frame entre MapLibre e Mapbox em tempo real.
+* **Funcionalidades 3D exclusivas Mapbox** — prédios extrudados com gradiente por altura, inclinação de câmera 50°, névoa atmosférica e iluminação solar calculada pelo horário real do Rio de Janeiro (UTC-3).
+* **Modal comparativo** — ícone **?** no header exibe vantagens e desvantagens lado a lado de cada engine.
 
-A interface conta com **duas abas de mapa** para comparação side-by-side das engines: **MapLibre GL** (open-source, sem token) e **Mapbox GL** (carregado de forma lazy apenas quando ativado).
+A interface conta com **duas abas de mapa** para comparação side-by-side das engines: **MapLibre GL** (open-source, sem token) e **Mapbox GL** (carregado de forma lazy apenas quando ativado). Um ícone **?** no canto superior direito abre um modal com a comparação de vantagens e desvantagens de cada engine.
 
 ---
 
@@ -65,6 +68,25 @@ Para garantir que o mapa rode a 60 FPS mesmo com milhares de SVGs e textos dinâ
 * **Maps Engine:** [MapLibre GL JS](https://maplibre.org/) + [Mapbox GL JS](https://docs.mapbox.com/mapbox-gl-js/) (carregado lazy).
 * **Basemap:** Esri World Imagery (MapLibre) / Mapbox Satellite (Mapbox).
 * **Backend / Proxy:** Node.js (Netlify Functions) rodando na borda.
+
+---
+
+## ⚖️ MapLibre GL vs Mapbox GL
+
+| | MapLibre GL | Mapbox GL |
+|---|---|---|
+| **Licença** | Open-source (BSD) | Proprietária |
+| **Token** | Não precisa | Obrigatório (`pk.*`) |
+| **Custo** | Gratuito, sem limites | Free tier: 50k map loads/mês |
+| **Telemetria** | Nenhuma | Ativa por padrão |
+| **Self-hosted** | ✅ Completo | ❌ Restrito pelos termos |
+| **Styles prontos** | Limitados | Satellite, Dark, Standard, Navigation... |
+| **3D buildings** | Requer fonte externa | ✅ Nativo (composite tileset) |
+| **Névoa / Globe** | ❌ | ✅ (GL JS v3) |
+| **APIs integradas** | ❌ | Geocoding, Directions, Isochrone |
+| **Suporte** | Comunidade | Comercial (Mapbox Inc.) |
+
+> Neste projeto ambas as engines recebem os mesmos dados GPS e executam as mesmas animações. Use o botão **📊 Análise** para comparar FPS e latência de renderização lado a lado.
 
 ---
 
