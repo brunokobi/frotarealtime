@@ -12,7 +12,6 @@
     <style>
         :root {
             --bg-dark: #0a0a0a;
-            --bg-darker: #050505;
             --bg-modal: rgba(15, 15, 15, 0.98);
             --text-main: #ffffff;
             --text-muted: #a0a0a0;
@@ -22,14 +21,9 @@
         }
 
         body {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100vh;
-            background: #000;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
+            margin: 0; padding: 0; width: 100%; height: 100vh;
+            background: #000; overflow: hidden;
+            display: flex; flex-direction: column;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         }
 
@@ -38,18 +32,12 @@
             background-color: var(--bg-dark);
             border-bottom: 2px solid var(--neon-green);
             color: var(--text-main);
-            display: flex;
-            flex-direction: column;
-            flex-shrink: 0;
-            z-index: 20;
+            display: flex; flex-direction: column; flex-shrink: 0; z-index: 20;
         }
 
         .top-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px 24px;
-            border-bottom: 1px solid var(--border-color);
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 12px 24px; border-bottom: 1px solid var(--border-color);
         }
 
         .brand-container { display: flex; align-items: center; gap: 12px; }
@@ -59,15 +47,7 @@
         .brand-title .highlight { color: var(--neon-green); margin-right: 6px; }
         .brand-subtitle { font-size: 10px; font-weight: 600; color: var(--text-muted); letter-spacing: 1.5px; text-transform: uppercase; }
 
-        /* Barra de Navegação */
-        .nav-bar {
-            display: flex;
-            justify-content: flex-start;
-            align-items: center;
-            padding: 10px 24px;
-            overflow-x: auto;
-        }
-
+        .nav-bar { display: flex; justify-content: flex-start; align-items: center; padding: 10px 24px; overflow-x: auto; }
         .nav-links { display: flex; gap: 24px; align-items: center; }
         .nav-links a {
             color: var(--text-muted); text-decoration: none; font-size: 13px; font-weight: 600;
@@ -78,27 +58,12 @@
         .nav-links i { font-size: 14px; }
 
         /* ---------------- TABS ---------------- */
-        .tab-bar {
-            display: flex;
-            border-top: 1px solid var(--border-color);
-        }
-
+        .tab-bar { display: flex; border-top: 1px solid var(--border-color); }
         .tab-btn {
-            flex: 1;
-            padding: 9px 16px;
-            background: none;
-            border: none;
-            border-bottom: 2px solid transparent;
-            color: var(--text-muted);
-            font-size: 12px;
-            font-weight: 700;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
+            flex: 1; padding: 9px 16px; background: none; border: none;
+            border-bottom: 2px solid transparent; color: var(--text-muted);
+            font-size: 12px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
+            cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
             transition: color 0.2s, border-color 0.2s, background 0.2s;
         }
         .tab-btn:hover { color: var(--text-main); background: rgba(255,255,255,0.03); }
@@ -106,101 +71,28 @@
         .tab-btn:disabled { opacity: 0.4; cursor: not-allowed; }
         .tab-btn + .tab-btn { border-left: 1px solid var(--border-color); }
 
-        /* ---------------- ÁREA DO MAPA ---------------- */
-        .map-container {
-            position: relative;
-            flex: 1;
-            width: 100%;
-        }
-
-        .map-view {
-            position: absolute;
-            inset: 0;
-            display: none;
-        }
+        /* ---------------- MAPA ---------------- */
+        .map-container { position: relative; flex: 1; width: 100%; }
+        .map-view { position: absolute; inset: 0; display: none; }
         .map-view.active { display: block; }
-
         #map, #map-mapbox { width: 100%; height: 100%; }
 
         /* ---------------- PANEL ---------------- */
         .panel {
             position: absolute; top: 15px; left: 15px;
-            background: rgba(15, 15, 15, 0.90);
-            color: #00ffcc; padding: 12px 16px;
-            font-family: monospace; font-size: 13px;
-            border-radius: 6px; z-index: 10;
-            border: 1px solid #333;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.8);
-            min-width: 200px;
+            background: rgba(15,15,15,0.90); color: #00ffcc;
+            padding: 12px 16px; font-family: monospace; font-size: 13px;
+            border-radius: 6px; z-index: 10; border: 1px solid #333;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.8); min-width: 200px;
         }
-
         .metric { color: #fff; font-weight: bold; }
         hr { border: 0; border-top: 1px solid #333; margin: 8px 0; }
-
-        /* ---------------- POPUP (MapLibre + Mapbox compartilhados) ---------------- */
-        .maplibregl-popup-content,
-        .mapboxgl-popup-content {
-            background-color: var(--bg-modal) !important;
-            color: #ffffff !important;
-            border: 1px solid var(--neon-green) !important;
-            border-radius: 8px !important;
-            box-shadow: 0 0 15px rgba(0, 255, 204, 0.5) !important;
-            padding: 15px 20px !important;
-            font-family: monospace !important;
-            min-width: 220px !important;
-        }
-
-        .maplibregl-popup-content b,
-        .mapboxgl-popup-content b {
-            color: var(--text-muted) !important;
-            font-weight: 400;
-            margin-right: 8px;
-            text-transform: uppercase;
-            font-size: 11px;
-        }
-
-        .maplibregl-popup-content span.modal-value,
-        .mapboxgl-popup-content span.modal-value {
-            color: #ffffff !important;
-            font-weight: 700;
-            font-size: 13px;
-        }
-
-        .maplibregl-popup-content span.modal-linha,
-        .mapboxgl-popup-content span.modal-linha {
-            color: var(--accent-yellow) !important;
-            font-weight: 700;
-            font-size: 13px;
-        }
-
-        .maplibregl-popup-tip,
-        .mapboxgl-popup-tip {
-            border-top-color: var(--bg-modal) !important;
-            border-bottom-color: var(--bg-modal) !important;
-            border-left-color: var(--bg-modal) !important;
-            border-right-color: var(--bg-modal) !important;
-        }
-
-        .maplibregl-popup-close-button,
-        .mapboxgl-popup-close-button {
-            color: var(--neon-green) !important;
-            font-size: 18px !important;
-            top: 5px !important;
-            right: 5px !important;
-        }
-        .maplibregl-popup-close-button:hover,
-        .mapboxgl-popup-close-button:hover {
-            color: var(--accent-yellow) !important;
-            background-color: transparent !important;
-        }
-
-        /* ---------------- ESTADOS DO PAINEL ---------------- */
         .panel-info  { color: #aaa; font-size: 11px; }
         .panel-ok    { color: #00ffcc; }
         .panel-warn  { color: #ffcc00; font-size: 11px; }
         .panel-error { color: #ff4444; font-size: 11px; }
 
-        /* ---------------- FILTRO DE LINHA ---------------- */
+        /* ---------------- FILTRO ---------------- */
         #filtro-box {
             position: absolute; top: 15px; right: 15px;
             display: flex; align-items: center; gap: 8px;
@@ -214,10 +106,7 @@
             color: #fff; font-family: monospace; font-size: 13px; width: 130px;
         }
         #filtro-input::placeholder { color: #444; }
-        #filtro-clear {
-            color: #555; cursor: pointer; font-size: 18px;
-            line-height: 1; display: none; user-select: none;
-        }
+        #filtro-clear { color: #555; cursor: pointer; font-size: 18px; line-height: 1; display: none; user-select: none; }
         #filtro-clear:hover { color: #ff4444; }
         #filtro-count { color: #00ffcc; font-size: 11px; white-space: nowrap; min-width: 60px; }
 
@@ -227,11 +116,89 @@
             background: rgba(15,15,15,0.90); border: 1px solid #333;
             border-radius: 6px; padding: 9px 14px; cursor: pointer;
             color: #555; font-size: 13px; font-family: monospace;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.8); display: flex;
-            align-items: center; gap: 7px; transition: color 0.2s, border-color 0.2s;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.8);
+            display: flex; align-items: center; gap: 7px;
+            transition: color 0.2s, border-color 0.2s;
         }
         #btn-heatmap:hover { color: #ff8800; }
         #btn-heatmap.active { color: #ff4444; border-color: #ff4444; }
+
+        /* ---------------- POPUP (MapLibre + Mapbox) ---------------- */
+        .maplibregl-popup-content,
+        .mapboxgl-popup-content {
+            background-color: var(--bg-modal) !important; color: #fff !important;
+            border: 1px solid var(--neon-green) !important; border-radius: 8px !important;
+            box-shadow: 0 0 15px rgba(0,255,204,0.5) !important;
+            padding: 15px 20px !important; font-family: monospace !important;
+            min-width: 220px !important;
+        }
+        .maplibregl-popup-content b, .mapboxgl-popup-content b {
+            color: var(--text-muted) !important; font-weight: 400;
+            margin-right: 8px; text-transform: uppercase; font-size: 11px;
+        }
+        .maplibregl-popup-content span.modal-value,
+        .mapboxgl-popup-content span.modal-value { color: #fff !important; font-weight: 700; font-size: 13px; }
+        .maplibregl-popup-content span.modal-linha,
+        .mapboxgl-popup-content span.modal-linha { color: var(--accent-yellow) !important; font-weight: 700; font-size: 13px; }
+        .maplibregl-popup-tip, .mapboxgl-popup-tip {
+            border-top-color: var(--bg-modal) !important; border-bottom-color: var(--bg-modal) !important;
+            border-left-color: var(--bg-modal) !important; border-right-color: var(--bg-modal) !important;
+        }
+        .maplibregl-popup-close-button, .mapboxgl-popup-close-button {
+            color: var(--neon-green) !important; font-size: 18px !important; top: 5px !important; right: 5px !important;
+        }
+        .maplibregl-popup-close-button:hover, .mapboxgl-popup-close-button:hover {
+            color: var(--accent-yellow) !important; background-color: transparent !important;
+        }
+
+        /* ---------------- HAMBURGER ---------------- */
+        .hamburger-btn {
+            display: none; background: none; border: 1px solid var(--border-color);
+            color: var(--neon-green); font-size: 18px; cursor: pointer;
+            padding: 6px 12px; border-radius: 4px; transition: border-color 0.2s;
+            align-items: center; line-height: 1;
+        }
+        .hamburger-btn:hover { border-color: var(--neon-green); }
+
+        /* ---------------- MOBILE ---------------- */
+        @media (max-width: 768px) {
+            .top-bar { padding: 8px 14px; }
+            .ufo-icon { font-size: 20px; }
+            .brand-container { gap: 8px; }
+            .brand-title { font-size: 15px; letter-spacing: 0; }
+            .brand-subtitle { display: none; }
+            .hamburger-btn { display: flex; }
+
+            .nav-bar {
+                display: none; flex-direction: column; padding: 0;
+                border-top: 1px solid var(--border-color);
+                max-height: calc(100dvh - 56px); overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+            .nav-bar.open { display: flex; }
+            .nav-links { flex-direction: column; gap: 0; width: 100%; }
+            .nav-links a { padding: 13px 20px; font-size: 14px; border-bottom: 1px solid var(--border-color); gap: 12px; }
+            .nav-links a.active { border-bottom: 1px solid var(--border-color); border-left: 3px solid var(--neon-green); padding-left: 17px; padding-bottom: 13px; }
+
+            .tab-btn { font-size: 11px; padding: 8px 6px; letter-spacing: 0.5px; gap: 6px; }
+
+            .panel { font-size: 11px; padding: 8px 10px; min-width: 0; top: 10px; left: 10px; }
+
+            #filtro-box { padding: 7px 10px; top: 10px; right: 10px; }
+            #filtro-input { width: 90px; font-size: 12px; }
+
+            #btn-heatmap { bottom: 40px; right: 10px; padding: 7px 10px; font-size: 12px; }
+
+            .maplibregl-popup-content, .mapboxgl-popup-content {
+                min-width: 170px !important; padding: 12px 14px !important; font-size: 12px !important;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .brand-title { font-size: 13px; }
+            .ufo-icon { font-size: 16px; }
+            #filtro-input { width: 70px; }
+        }
     </style>
 </head>
 <body>
@@ -274,40 +241,69 @@
     </header>
 
     <main class="map-container">
-        <div id="panel">📡 Inicializando satélite...</div>
-        <div id="filtro-box">
-            <i class="fa-solid fa-magnifying-glass"></i>
-            <input id="filtro-input" type="text" placeholder="Filtrar linha..." autocomplete="off" spellcheck="false" />
-            <span id="filtro-clear" title="Limpar">×</span>
-            <span id="filtro-count"></span>
+        <!-- Aba MapLibre (funcionalidades completas) -->
+        <div id="view-maplibre" class="map-view active">
+            <div id="panel" class="panel">📡 Inicializando satélite...</div>
+            <div id="filtro-box">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input id="filtro-input" type="text" placeholder="Filtrar linha..." autocomplete="off" spellcheck="false" />
+                <span id="filtro-clear" title="Limpar">×</span>
+                <span id="filtro-count"></span>
+            </div>
+            <div id="map"></div>
+            <button id="btn-heatmap">
+                <i class="fa-solid fa-fire"></i> Heatmap
+            </button>
         </div>
-        <div id="map"></div>
-        <button id="btn-heatmap">
-            <i class="fa-solid fa-fire"></i> Heatmap
-        </button>
+
+        <!-- Aba Mapbox (carregada lazy) -->
+        <div id="view-mapbox" class="map-view">
+            <div id="panel-mapbox" class="panel">🗺️ Clique na aba para ativar o Mapbox</div>
+            <div id="map-mapbox"></div>
+        </div>
     </main>
 
     <script src="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js"></script>
 
     <script>
+        // ===================== STATE =====================
         let fetchTimeGlobal = "0.00";
         let t1Global = 0;
         let busCount = 0;
         let isFetching = false;
         let intervalId = null;
         let abortController = null;
-        let prevPositions = new Map(); // id → [lng, lat]
+        let prevPositions = new Map();
         let animFrameId = null;
         let currentData = null;
         let filtroLinha = '';
-        let busHistory = new Map(); // id → [[lng, lat], ...]
+        let busHistory = new Map();
         let activePopup = null;
 
-        const busSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#00ffcc"><path d="M4 16c0 .88.39 1.67 1 2.22v1.28c0 .83.67 1.5 1.5 1.5S8 20.33 8 19.5V19h8v.5c0 .82.67 1.5 1.5 1.5.82 0 1.5-.67 1.5-1.5v-1.28c.61-.55 1-1.34 1-2.22V6c0-3.5-3.58-4-8-4s-8 .5-8 4v10zm3.5 1c-.83 0-1.5-.67-1.5-1.5S6.67 14 7.5 14s1.5.67 1.5 1.5S8.33 17 7.5 17zm9 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm1.5-6H6V6h12v5z"/></svg>`;
-        const busSvgUrl = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(busSvg);
+        let currentTab = 'maplibre';
+        let mapboxMap = null;
+        let mapboxInitialized = false;
+        let mapboxLoading = false;
+        let mapboxLayerReady = false;
+        let lastGeoJSON = null;
+
+        // ===================== ÍCONES =====================
+        function makeBusSvg(cor) {
+            return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="${cor}"><path d="M4 16c0 .88.39 1.67 1 2.22v1.28c0 .83.67 1.5 1.5 1.5S8 20.33 8 19.5V19h8v.5c0 .82.67 1.5 1.5 1.5.82 0 1.5-.67 1.5-1.5v-1.28c.61-.55 1-1.34 1-2.22V6c0-3.5-3.58-4-8-4s-8 .5-8 4v10zm3.5 1c-.83 0-1.5-.67-1.5-1.5S6.67 14 7.5 14s1.5.67 1.5 1.5S8.33 17 7.5 17zm9 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm1.5-6H6V6h12v5z"/></svg>`;
+        }
+
+        const mapboxIconUrl = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(makeBusSvg('#00ffcc'));
+
+        function carregarIcone(nome, cor) {
+            return new Promise(resolve => {
+                const img = new Image(24, 24);
+                img.onload = () => { map.addImage(nome, img); resolve(); };
+                img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(makeBusSvg(cor));
+            });
+        }
 
         // ===================== MAPLIBRE =====================
-        const maplibreMap = new maplibregl.Map({
+        const map = new maplibregl.Map({
             container: 'map',
             antialias: false,
             maxBounds: [[-44.5, -23.5], [-42.5, -22.0]],
@@ -328,18 +324,6 @@
             zoom: 11
         });
 
-        function busSvg(cor) {
-            return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="${cor}"><path d="M4 16c0 .88.39 1.67 1 2.22v1.28c0 .83.67 1.5 1.5 1.5S8 20.33 8 19.5V19h8v.5c0 .82.67 1.5 1.5 1.5.82 0 1.5-.67 1.5-1.5v-1.28c.61-.55 1-1.34 1-2.22V6c0-3.5-3.58-4-8-4s-8 .5-8 4v10zm3.5 1c-.83 0-1.5-.67-1.5-1.5S6.67 14 7.5 14s1.5.67 1.5 1.5S8.33 17 7.5 17zm9 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm1.5-6H6V6h12v5z"/></svg>`;
-        }
-
-        function carregarIcone(nome, cor) {
-            return new Promise(resolve => {
-                const img = new Image(24, 24);
-                img.onload = () => { map.addImage(nome, img); resolve(); };
-                img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(busSvg(cor));
-            });
-        }
-
         map.on('load', () => {
             Promise.all([
                 carregarIcone('bus-green',  '#00ffcc'),
@@ -349,123 +333,83 @@
         });
 
         function initLayers() {
-            // Source principal com cluster ativo (zoom ≤ 10 agrupa, zoom > 10 mostra individual)
             map.addSource('frota-onibus', {
                 type: 'geojson',
                 data: { type: 'FeatureCollection', features: [] },
-                tolerance: 0,
-                buffer: 64,
-                cluster: true,
-                clusterMaxZoom: 10,
-                clusterRadius: 50
+                tolerance: 0, buffer: 64,
+                cluster: true, clusterMaxZoom: 10, clusterRadius: 50
             });
 
-            // Source separado para o trail (sem cluster)
             map.addSource('trail-source', {
                 type: 'geojson',
                 data: { type: 'FeatureCollection', features: [] }
             });
 
-            // ── Trail (linha pontilhada, abaixo dos ônibus) ──
+            // Trail pontilhado
             map.addLayer({
-                id: 'layer-trail',
-                type: 'line',
-                source: 'trail-source',
+                id: 'layer-trail', type: 'line', source: 'trail-source',
                 layout: { 'line-join': 'round', 'line-cap': 'round' },
-                paint: {
-                    'line-color': '#00ffcc',
-                    'line-width': 2,
-                    'line-dasharray': [2, 3],
-                    'line-opacity': 0.85
-                }
+                paint: { 'line-color': '#00ffcc', 'line-width': 2, 'line-dasharray': [2, 3], 'line-opacity': 0.85 }
             });
 
-            // ── Clusters — círculo ──
+            // Clusters — círculo
             map.addLayer({
-                id: 'layer-clusters',
-                type: 'circle',
-                source: 'frota-onibus',
+                id: 'layer-clusters', type: 'circle', source: 'frota-onibus',
                 filter: ['has', 'point_count'],
                 paint: {
-                    'circle-color': ['step', ['get', 'point_count'],
-                        '#00ffcc', 100, '#ffcc00', 500, '#ff4444'],
-                    'circle-radius': ['step', ['get', 'point_count'],
-                        20, 100, 28, 500, 40],
-                    'circle-stroke-width': 2,
-                    'circle-stroke-color': '#000000',
-                    'circle-opacity': 0.9
+                    'circle-color': ['step', ['get', 'point_count'], '#00ffcc', 100, '#ffcc00', 500, '#ff4444'],
+                    'circle-radius': ['step', ['get', 'point_count'], 20, 100, 28, 500, 40],
+                    'circle-stroke-width': 2, 'circle-stroke-color': '#000000', 'circle-opacity': 0.9
                 }
             });
 
-            // ── Clusters — contagem ──
+            // Clusters — contagem
             map.addLayer({
-                id: 'layer-cluster-count',
-                type: 'symbol',
-                source: 'frota-onibus',
+                id: 'layer-cluster-count', type: 'symbol', source: 'frota-onibus',
                 filter: ['has', 'point_count'],
                 layout: {
                     'text-field': '{point_count_abbreviated}',
-                    'text-font': ['Noto Sans Bold'],
-                    'text-size': 13,
-                    'text-allow-overlap': true
+                    'text-font': ['Noto Sans Bold'], 'text-size': 13, 'text-allow-overlap': true
                 },
                 paint: { 'text-color': '#000000' }
             });
 
-            // ── Heatmap (oculto por padrão) ──
+            // Heatmap (oculto por padrão)
             map.addLayer({
-                id: 'layer-heatmap',
-                type: 'heatmap',
-                source: 'frota-onibus',
+                id: 'layer-heatmap', type: 'heatmap', source: 'frota-onibus',
                 layout: { visibility: 'none' },
                 paint: {
                     'heatmap-weight': 1,
                     'heatmap-intensity': ['interpolate', ['linear'], ['zoom'], 0, 1, 12, 4],
                     'heatmap-color': [
                         'interpolate', ['linear'], ['heatmap-density'],
-                        0,    'rgba(0,0,0,0)',
-                        0.25, '#004d40',
-                        0.5,  '#00ffcc',
-                        0.75, '#ffcc00',
-                        1,    '#ff4444'
+                        0, 'rgba(0,0,0,0)', 0.25, '#004d40', 0.5, '#00ffcc', 0.75, '#ffcc00', 1, '#ff4444'
                     ],
                     'heatmap-radius': ['interpolate', ['linear'], ['zoom'], 0, 6, 12, 25],
                     'heatmap-opacity': 0.8
                 }
             });
 
-            // ── Ônibus individuais (apenas pontos não-clusterizados) ──
+            // Ônibus individuais
             map.addLayer({
-                id: 'layer-onibus',
-                type: 'symbol',
-                source: 'frota-onibus',
+                id: 'layer-onibus', type: 'symbol', source: 'frota-onibus',
                 filter: ['!', ['has', 'point_count']],
                 minzoom: 10,
                 layout: {
-                    'icon-image': [
-                        'case',
+                    'icon-image': ['case',
                         ['==', ['to-number', ['get', 'velocidade']], 0], 'bus-red',
-                        ['<', ['to-number', ['get', 'velocidade']], 20],  'bus-yellow',
+                        ['<', ['to-number', ['get', 'velocidade']], 20], 'bus-yellow',
                         'bus-green'
                     ],
-                    'icon-size': 0.8,
-                    'icon-allow-overlap': true,
-                    'text-field': ['get', 'linha'],
-                    'text-font': ['Noto Sans Bold'],
-                    'text-size': 11,
-                    'text-offset': [0, 1.2],
-                    'text-anchor': 'top',
-                    'text-ignore-placement': true,
-                    'text-allow-overlap': false
+                    'icon-size': 0.8, 'icon-allow-overlap': true,
+                    'text-field': ['get', 'linha'], 'text-font': ['Noto Sans Bold'],
+                    'text-size': 11, 'text-offset': [0, 1.2], 'text-anchor': 'top',
+                    'text-ignore-placement': true, 'text-allow-overlap': false
                 },
-                paint: {
-                    'text-color': '#ffeb3b',
-                    'text-halo-color': '#000000',
-                    'text-halo-width': 2
-                }
+                paint: { 'text-color': '#ffeb3b', 'text-halo-color': '#000000', 'text-halo-width': 2 }
             });
 
-            // ── Cluster click → zoom in ──
+            // Cluster click → zoom
             map.on('click', 'layer-clusters', (e) => {
                 const clusterId = e.features[0].properties.cluster_id;
                 map.getSource('frota-onibus').getClusterExpansionZoom(clusterId, (err, zoom) => {
@@ -476,12 +420,12 @@
             map.on('mouseenter', 'layer-clusters', () => map.getCanvas().style.cursor = 'pointer');
             map.on('mouseleave', 'layer-clusters', () => map.getCanvas().style.cursor = '');
 
-            // ── Ônibus click → popup + trail ──
+            // Ônibus click → popup + trail
             map.on('click', 'layer-onibus', (e) => {
                 const coord = e.features[0].geometry.coordinates.slice();
                 const props = e.features[0].properties;
-
                 const trail = busHistory.get(String(props.id)) || [];
+
                 map.getSource('trail-source').setData({
                     type: 'FeatureCollection',
                     features: trail.length > 1 ? [{
@@ -491,55 +435,36 @@
                     }] : []
                 });
 
-                const popupHtml = `
-                    <div><b>NÚMERO:</b> <span class="modal-value">${props.id}</span></div>
-                    <div style="margin-top:6px"><b>LINHA:</b> <span class="modal-linha">${props.linha}</span></div>
-                    <div style="margin-top:6px"><b>VELOCIDADE:</b> <span class="modal-value">${props.velocidade} km/h</span></div>
-                    <div style="margin-top:6px;color:#555;font-size:11px">Trail: ${trail.length} posição(ões) registrada(s)</div>
-                `;
-
                 if (activePopup) activePopup.remove();
                 activePopup = new maplibregl.Popup({ offset: 10, anchor: 'bottom', closeButton: true, closeOnClick: true })
                     .setLngLat(coord)
-                    .setHTML(popupHtml)
+                    .setHTML(`
+                        <div><b>NÚMERO:</b> <span class="modal-value">${props.id}</span></div>
+                        <div style="margin-top:6px"><b>LINHA:</b> <span class="modal-linha">${props.linha}</span></div>
+                        <div style="margin-top:6px"><b>VELOCIDADE:</b> <span class="modal-value">${props.velocidade} km/h</span></div>
+                        <div style="margin-top:6px;color:#555;font-size:11px">Trail: ${trail.length} posição(ões) registrada(s)</div>
+                    `)
                     .addTo(map);
 
                 activePopup.on('close', () => {
                     map.getSource('trail-source').setData({ type: 'FeatureCollection', features: [] });
                 });
             });
+            map.on('mouseenter', 'layer-onibus', () => map.getCanvas().style.cursor = 'pointer');
+            map.on('mouseleave', 'layer-onibus', () => map.getCanvas().style.cursor = '');
 
-            maplibreMap.on('mouseenter', 'layer-onibus', () => maplibreMap.getCanvas().style.cursor = 'pointer');
-            maplibreMap.on('mouseleave', 'layer-onibus', () => maplibreMap.getCanvas().style.cursor = '');
-
-            maplibreLayerReady = true;
             fetchPositions();
             intervalId = setInterval(fetchPositions, 30000);
 
             document.addEventListener('visibilitychange', () => {
-                if (document.hidden) {
-                    clearInterval(intervalId);
-                    intervalId = null;
-                } else {
-                    fetchPositions();
-                    intervalId = setInterval(fetchPositions, 30000);
-                }
+                if (document.hidden) { clearInterval(intervalId); intervalId = null; }
+                else { fetchPositions(); intervalId = setInterval(fetchPositions, 30000); }
             });
         }
 
+        // ===================== CACHE =====================
         const CACHE_KEY = 'frota_compact_cache';
         const CACHE_TS_KEY = 'frota_compact_cache_ts';
-
-        function toGeoJSON(data) {
-            return {
-                type: 'FeatureCollection',
-                features: data.buses.map(([id, linha, velocidade, lng, lat]) => ({
-                    type: 'Feature',
-                    geometry: { type: 'Point', coordinates: [lng, lat] },
-                    properties: { id, linha, velocidade, parcial: data.parcial }
-                }))
-            };
-        }
 
         function salvarCache(data) {
             try {
@@ -554,7 +479,7 @@
                 const ts = localStorage.getItem(CACHE_TS_KEY);
                 if (!raw) return null;
                 const data = JSON.parse(raw);
-                if (!Array.isArray(data.buses)) return null; // descarta cache antigo no formato GeoJSON
+                if (!Array.isArray(data.buses)) return null;
                 return { data, ts: ts ? parseInt(ts) : null };
             } catch (_) { return null; }
         }
@@ -563,20 +488,20 @@
             if (!ts) return 'cache antigo';
             const min = Math.round((Date.now() - ts) / 60000);
             if (min < 60) return `cache de ${min} min atrás`;
-            const h = Math.floor(min / 60);
-            return `cache de ${h}h atrás`;
+            return `cache de ${Math.floor(min / 60)}h atrás`;
         }
 
-        function atualizarPainel(tipo, linhas) {
-            const icones = { online: '🟢', loading: '⏳', warn: '🟡', error: '🔴' };
-            const titulos = { online: 'SISTEMA ONLINE', loading: 'BAIXANDO DADOS...', warn: 'API INDISPONÍVEL', error: 'ERRO DE CONEXÃO' };
-            const classes = { online: 'panel-ok', loading: 'panel-info', warn: 'panel-warn', error: 'panel-error' };
-            document.getElementById('panel').innerHTML =
-                `${icones[tipo]} <b>${titulos[tipo]}</b><br><hr><span class="${classes[tipo]}">${linhas}</span>`;
+        // ===================== DATA UTILS =====================
+        function toGeoJSON(data) {
+            return {
+                type: 'FeatureCollection',
+                features: data.buses.map(([id, linha, velocidade, lng, lat]) => ({
+                    type: 'Feature',
+                    geometry: { type: 'Point', coordinates: [lng, lat] },
+                    properties: { id, linha, velocidade, parcial: data.parcial }
+                }))
+            };
         }
-
-        function lerp(a, b, t) { return a + (b - a) * t; }
-        function easeInOut(t) { return t < 0.5 ? 2*t*t : -1+(4-2*t)*t; }
 
         function aplicarFiltro(data) {
             if (!filtroLinha) return data;
@@ -598,12 +523,11 @@
             const total = data.buses.length;
             if (total === 0) return { pctParados: 0, velMedia: 0, topLinha: '-' };
             const parados = data.buses.filter(b => b[2] === 0).length;
-            const pctParados = Math.round(parados / total * 100);
             const velMedia = Math.round(data.buses.reduce((s, b) => s + b[2], 0) / total);
             const linhaMap = {};
             data.buses.forEach(b => { const l = b[1] || '?'; linhaMap[l] = (linhaMap[l] || 0) + 1; });
             const top = Object.entries(linhaMap).sort((a, b) => b[1] - a[1])[0];
-            return { pctParados, velMedia, topLinha: top ? `${top[0]} (${top[1]})` : '-' };
+            return { pctParados: Math.round(parados / total * 100), velMedia, topLinha: top ? `${top[0]} (${top[1]})` : '-' };
         }
 
         function renderData(data) {
@@ -611,6 +535,18 @@
             map.getSource('frota-onibus').setData(toGeoJSON(filtrado));
             return filtrado.buses.length;
         }
+
+        function atualizarPainel(tipo, linhas) {
+            const icones  = { online: '🟢', loading: '⏳', warn: '🟡', error: '🔴' };
+            const titulos = { online: 'SISTEMA ONLINE', loading: 'BAIXANDO DADOS...', warn: 'API INDISPONÍVEL', error: 'ERRO DE CONEXÃO' };
+            const classes = { online: 'panel-ok', loading: 'panel-info', warn: 'panel-warn', error: 'panel-error' };
+            document.getElementById('panel').innerHTML =
+                `${icones[tipo]} <b>${titulos[tipo]}</b><br><hr><span class="${classes[tipo]}">${linhas}</span>`;
+        }
+
+        // ===================== ANIMAÇÃO =====================
+        function lerp(a, b, t) { return a + (b - a) * t; }
+        function easeInOut(t) { return t < 0.5 ? 2*t*t : -1+(4-2*t)*t; }
 
         function animarMovimento(data) {
             currentData = data;
@@ -684,11 +620,8 @@
 
             mapboxMap.on('load', () => {
                 const img = new Image(24, 24);
-                img.onload = () => {
-                    mapboxMap.addImage('bus-icon', img);
-                    initMapboxLayers();
-                };
-                img.src = busSvgUrl;
+                img.onload = () => { mapboxMap.addImage('bus-icon', img); initMapboxLayers(); };
+                img.src = mapboxIconUrl;
             });
         }
 
@@ -699,27 +632,15 @@
             });
 
             mapboxMap.addLayer({
-                id: 'layer-onibus-mapbox',
-                type: 'symbol',
-                source: 'frota-onibus-mapbox',
+                id: 'layer-onibus-mapbox', type: 'symbol', source: 'frota-onibus-mapbox',
                 minzoom: 10,
                 layout: {
-                    'icon-image': 'bus-icon',
-                    'icon-size': 0.8,
-                    'icon-allow-overlap': true,
-                    'text-field': ['get', 'linha'],
-                    'text-font': ['DIN Offc Pro Bold', 'Arial Unicode MS Bold'],
-                    'text-size': 11,
-                    'text-offset': [0, 1.2],
-                    'text-anchor': 'top',
-                    'text-ignore-placement': true,
-                    'text-allow-overlap': false
+                    'icon-image': 'bus-icon', 'icon-size': 0.8, 'icon-allow-overlap': true,
+                    'text-field': ['get', 'linha'], 'text-font': ['DIN Offc Pro Bold', 'Arial Unicode MS Bold'],
+                    'text-size': 11, 'text-offset': [0, 1.2], 'text-anchor': 'top',
+                    'text-ignore-placement': true, 'text-allow-overlap': false
                 },
-                paint: {
-                    'text-color': '#ffeb3b',
-                    'text-halo-color': '#000000',
-                    'text-halo-width': 2
-                }
+                paint: { 'text-color': '#ffeb3b', 'text-halo-color': '#000000', 'text-halo-width': 2 }
             });
 
             mapboxMap.on('data', (e) => {
@@ -728,8 +649,7 @@
                     const featuresCount = mapboxMap.querySourceFeatures('frota-onibus-mapbox').length;
                     if (featuresCount > 0) {
                         document.getElementById('panel-mapbox').innerHTML = `
-                            🟢 <b>SISTEMA ONLINE</b><br>
-                            <hr>
+                            🟢 <b>SISTEMA ONLINE</b><br><hr>
                             Frota Ativa: <span class="metric">${featuresCount}</span><br>
                             Fetch & Parse: <span class="metric">${fetchTimeGlobal} s</span><br>
                             Render GPU: <span class="metric">${renderTimeSec} s</span>
@@ -757,9 +677,7 @@
             mapboxLayerReady = true;
             mapboxInitialized = true;
 
-            if (lastGeoJSON) {
-                mapboxMap.getSource('frota-onibus-mapbox').setData(lastGeoJSON);
-            }
+            if (lastGeoJSON) mapboxMap.getSource('frota-onibus-mapbox').setData(lastGeoJSON);
         }
 
         // ===================== TABS =====================
@@ -781,15 +699,15 @@
                         await initMapbox();
                     } catch (err) {
                         console.error('Erro ao carregar Mapbox:', err);
-                        document.getElementById('panel-mapbox').innerHTML = '🔴 <b>ERRO AO CARREGAR MAPBOX</b><br><hr><span style="color:#ff4444;font-size:11px;">Verifique o token e tente novamente</span>';
+                        document.getElementById('panel-mapbox').innerHTML =
+                            '🔴 <b>ERRO AO CARREGAR MAPBOX</b><br><hr><span style="color:#ff4444;font-size:11px;">Verifique o token e tente novamente</span>';
                     } finally {
                         mapboxLoading = false;
                         document.querySelectorAll('.tab-btn').forEach(b => b.disabled = false);
                     }
                 }
 
-                // Resize o mapa ativo para ajustar ao container visível
-                if (tab === 'maplibre') maplibreMap.resize();
+                if (tab === 'maplibre') map.resize();
                 if (tab === 'mapbox' && mapboxMap) setTimeout(() => mapboxMap.resize(), 0);
             });
         });
@@ -827,6 +745,10 @@
                 salvarCache(data);
                 animarMovimento(data);
 
+                // Atualiza Mapbox com os dados mais recentes
+                lastGeoJSON = toGeoJSON(data);
+                if (mapboxLayerReady) mapboxMap.getSource('frota-onibus-mapbox').setData(lastGeoJSON);
+
                 const renderMs = ((performance.now() - t1Global) / 1000).toFixed(2);
                 const stats = calcularStats(data);
                 atualizarPainel('online',
@@ -858,7 +780,7 @@
             }
         }
 
-        // ---------------- FILTRO DE LINHA ----------------
+        // ===================== FILTRO =====================
         const filtroInput = document.getElementById('filtro-input');
         const filtroClear = document.getElementById('filtro-clear');
         const filtroCount = document.getElementById('filtro-count');
@@ -873,18 +795,38 @@
         });
 
         filtroClear.addEventListener('click', () => {
-            filtroInput.value = '';
-            filtroLinha = '';
+            filtroInput.value = ''; filtroLinha = '';
             filtroClear.style.display = 'none';
             filtroCount.textContent = '';
             if (currentData) renderData(currentData);
         });
 
-        // ---------------- TOGGLE HEATMAP ----------------
-        document.getElementById('btn-heatmap').addEventListener('click', function() {
+        // ===================== HEATMAP =====================
+        document.getElementById('btn-heatmap').addEventListener('click', function () {
             const ativo = this.classList.toggle('active');
             map.setLayoutProperty('layer-heatmap', 'visibility', ativo ? 'visible' : 'none');
         });
+
+        // ===================== HAMBURGER =====================
+        (function () {
+            const btn = document.getElementById('hamburger-btn');
+            const icon = document.getElementById('hamburger-icon');
+            const navBar = document.querySelector('.nav-bar');
+
+            btn.addEventListener('click', () => {
+                const isOpen = navBar.classList.toggle('open');
+                btn.setAttribute('aria-expanded', isOpen);
+                icon.className = isOpen ? 'fa-solid fa-xmark' : 'fa-solid fa-bars';
+            });
+
+            navBar.querySelectorAll('a').forEach(link => {
+                link.addEventListener('click', () => {
+                    navBar.classList.remove('open');
+                    btn.setAttribute('aria-expanded', 'false');
+                    icon.className = 'fa-solid fa-bars';
+                });
+            });
+        })();
     </script>
 </body>
 </html>
